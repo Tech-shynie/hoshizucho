@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>星図帖 Version 1.0</title>
+  <title>星図帖 Version 1.1</title>
   <meta name="theme-color" content="#111218" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="星図帖" />
@@ -40,7 +40,7 @@
     @media(max-width:620px){header{height:auto;min-height:56px;padding:8px 9px;align-items:center}.brand{gap:6px}.brand h1{font-size:18px;writing-mode:horizontal-tb;line-height:1;white-space:nowrap}.version{display:none}.header-actions{gap:3px;margin-left:auto}.header-actions button{font-size:10px;padding:6px 6px;border-radius:9px}.side-scroll{padding:10px}.panel-body{padding:11px}.type-grid{grid-template-columns:repeat(2,1fr)}.graph-toolbar{top:8px;left:8px;right:8px}.toolbar-left .pill{display:none}.toolbar-right{margin-left:auto;gap:4px}.toolbar-right button{font-size:10px;padding:7px 7px}.zoom-value{display:none}.composer-actions button.primary{width:100%;height:44px}.list{max-height:34vh}.detail{border-radius:18px;padding:13px}.detail-actions button{font-size:11px;padding:7px 8px}.modal{padding:16px}.toast{width:calc(100% - 24px);text-align:center}}
 
 
-    /* ===== Version 1.0 refinement layer: product polish, no new feature ===== */
+    /* ===== Version 1.1 refinement layer ===== */
     :root{
       --ease-standard:cubic-bezier(.2,.8,.2,1);
       --ease-soft:cubic-bezier(.16,1,.3,1);
@@ -52,6 +52,8 @@
     html{color-scheme:dark;-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}
     body{-webkit-font-smoothing:antialiased;letter-spacing:.01em}
     ::selection{background:rgba(201,162,74,.34);color:#fff}
+    :where(button,.buttonish,input,textarea,select,summary,[tabindex]):focus-visible{outline:2px solid var(--gold2);outline-offset:3px;box-shadow:0 0 0 5px rgba(201,162,74,.13)}
+    [aria-invalid="true"]{border-color:var(--danger)!important;box-shadow:0 0 0 3px rgba(193,102,107,.14)!important}
     .app::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.035),transparent 34%,rgba(201,162,74,.03));opacity:.42;mix-blend-mode:screen}
     header{height:60px;padding:0 20px;border-bottom-color:var(--hairline);box-shadow:0 12px 40px rgba(0,0,0,.18)}
     .brand h1{font-size:19px;letter-spacing:.12em;text-shadow:0 0 22px rgba(201,162,74,.18)}
@@ -982,7 +984,7 @@
 <body>
   <div class="app">
     <header>
-      <div class="brand"><h1 class="font-display">星図帖</h1><span class="version font-mono">Version 1.0</span></div>
+      <div class="brand"><h1 class="font-display">星図帖</h1><span class="version font-mono">Version 1.1</span></div>
       <div class="header-actions">
         <button class="primary desktop-compose-trigger" id="desktopComposeBtn" type="button">＋ 綴る</button>
         <button class="ghost" id="helpBtn">使い方</button>
@@ -1023,8 +1025,8 @@
           <section class="panel" id="memoryPanel">
             <div class="panel-head"><div class="panel-title">星片の記憶</div><span class="stat" id="filteredCount">0件表示</span></div>
             <div class="search-box">
-              <input id="searchInput" placeholder="星片を呼び戻す… タイトル・本文・タグ" />
-              <div class="mini-row"><select id="filterType"></select><button id="clearSearchBtn" class="ghost">検索解除</button></div>
+              <input id="searchInput" aria-label="星片を検索" placeholder="星片を呼び戻す… タイトル・本文・タグ" />
+              <div class="mini-row"><select id="filterType" aria-label="星片の種類で絞り込む"></select><button id="clearSearchBtn" class="ghost">検索解除</button></div>
               <div class="stats" id="stats"></div>
               <details class="graph-access"><summary>星図を一覧で操作</summary><div class="graph-access-list" id="graphAccessList"></div></details>
             </div>
@@ -1057,10 +1059,11 @@
 
   <div class="desktop-compose-backdrop" id="desktopComposeBackdrop" aria-hidden="true"></div>
 
-  <div class="modal-bg" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="helpModalTitle">星図帖 Version 1.0 の使い方</h2><p>星図帖は、記録を「星片」として残し、タグと手動リンクで知識の星図を育てるローカルメモ帳です。</p><ul><li>星片には「タイトル・本文・種類」を必ず設定します。</li><li><code>#読書</code> のように書くとタグとして読み取られます。</li><li>同じタグを持つ星片は、大きなタグ星につながります。</li><li>タグ星・星片はドラッグして好きな場所へ移動でき、位置はこの端末に保存されます。</li><li>「再配置」を押すと、保存した位置を解除して自動配置に戻せます。</li><li>詳細画面の「つなげる」から、星片同士を手動で結べます。</li><li>検索はタイトル、本文、タグ、種類に対応しています。</li><li>Markdown風の見出し、太字、箇条書き、コード表示に対応しています。</li><li>画像は端末内で縮小・圧縮してから保存し、外部へ送信しません。</li><li>保存はブラウザの localStorage です。定期的に「書き出し」でバックアップしてください。</li><li>外部AI APIは使っていないため、料金はかかりません。</li></ul><button class="primary" id="closeHelpBtn">閉じる</button></div></div>
+  <div class="modal-bg" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="helpModalTitle">星図帖 Version 1.1 の使い方</h2><p>星図帖は、記録を「星片」として残し、タグと手動リンクで知識の星図を育てるローカルメモ帳です。</p><ul><li>星片には「タイトル・本文・種類」を必ず設定します。入力途中の下書きはこの端末へ自動保存されます。</li><li><code>#読書</code> のように書くとタグとして読み取られます。</li><li>同じタグを持つ星片は、大きなタグ星につながります。</li><li>タグ星・星片はドラッグして好きな場所へ移動でき、位置はこの端末に保存されます。</li><li>「再配置」を押すと、保存した位置を解除して自動配置に戻せます。</li><li>詳細画面の「つなげる」から、星片同士を手動で結べます。</li><li>検索はタイトル、本文、タグ、種類に対応しています。</li><li>Markdown風の見出し、太字、箇条書き、コード表示に対応しています。</li><li>画像は端末内で縮小・圧縮してから保存し、外部へ送信しません。</li><li>保存はブラウザの localStorage です。定期的に「書き出し」でバックアップしてください。</li><li>ショートカット：<code>N</code>で新規作成、<code>/</code>で検索、<code>Ctrl/Cmd + Enter</code>で保存できます。</li><li>外部AI APIは使っていないため、料金はかかりません。</li></ul><button class="primary" id="closeHelpBtn">閉じる</button></div></div>
   <div class="modal-bg" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="confirmModalTitle">すべて削除しますか？</h2><p>この操作は取り消せません。必要なら先に「書き出し」でバックアップしてください。</p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button id="cancelClearBtn">キャンセル</button><button class="danger" id="doClearBtn">削除する</button></div></div></div>
   <div class="modal-bg" id="deleteNoteModal" role="dialog" aria-modal="true" aria-labelledby="deleteNoteModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="deleteNoteModalTitle">この星片を削除しますか？</h2><p id="deleteNoteText">この操作は取り消せません。</p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button id="cancelDeleteNoteBtn">キャンセル</button><button class="danger" id="confirmDeleteNoteBtn">削除する</button></div></div></div>
   <div class="modal-bg" id="copyTextModal" role="dialog" aria-modal="true" aria-labelledby="copyTextModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="copyTextModalTitle">コピー用テキスト</h2><p class="hint">自動コピーがブロックされた場合は、下の文章を手動でコピーしてください。</p><textarea class="copy-textarea" id="copyTextArea"></textarea><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap;"><button id="selectCopyTextBtn">コピーを試す</button><button id="shareCopyTextBtn">共有する</button><button id="downloadCopyTextBtn">TXT保存</button><button id="closeCopyTextBtn">閉じる</button></div></div></div>
+  <div class="modal-bg" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="exportModalTitle">書き出す形式を選択</h2><p>データの復元にはJSON、文章として読む場合はMarkdownがおすすめです。</p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap;"><button id="cancelExportBtn">キャンセル</button><button id="exportMarkdownBtn">Markdown</button><button class="primary" id="exportJsonBtn">JSONバックアップ</button></div></div></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
@@ -1068,6 +1071,7 @@
   const STORAGE_KEY = "hoshizucho-v1-notes";
   const TAG_STYLE_KEY = "hoshizucho-v1-tag-styles";
   const NODE_LAYOUT_KEY = "hoshizucho-v1-node-layouts";
+  const DRAFT_KEY = "hoshizucho-v1-draft";
   const LEGACY_KEYS = ["hoshizucho-notes-url-color-v2", "hoshizucho-notes-url-color-v1", "hoshizucho-notes-local-v1"];
   const COLOR = { bg:"#111218", panel:"#1B1D24", text:"#ECE8DE", sub:"#9A9DAA", gold:"#C9A24A", gold2:"#D8C48A", edge:"#444957", manual:"#8AB4FF", danger:"#C1666B" };
   const TYPES = [
@@ -1133,6 +1137,7 @@
   let idleTwinkleTimer = 0;
   let activeModalId = null;
   let modalReturnFocus = null;
+  let draftSaveTimer = 0;
   const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const canvas = $("canvas");
@@ -1146,6 +1151,25 @@
   function truncate(s,n){ const v=String(s||""); return v.length>n ? v.slice(0,n)+"…" : v; }
   function typeInfo(key){ return TYPE_MAP[key] || TYPE_MAP.memo; }
   function isUsefulKeyword(w){ return !(/^[0-9]+$/.test(w) || /^[ぁ-ん]{2,4}$/.test(w)); }
+  function saveDraft(){
+    clearTimeout(draftSaveTimer);
+    const draft={title:$("titleInput").value,tags:$("tagsInput").value,body:$("bodyInput").value,type:$("typeInput").value||selectedType};
+    try{ if(draft.title.trim()||draft.tags.trim()||draft.body.trim()) localStorage.setItem(DRAFT_KEY,JSON.stringify(draft)); else localStorage.removeItem(DRAFT_KEY); }catch{}
+  }
+  function scheduleDraftSave(){ clearTimeout(draftSaveTimer); draftSaveTimer=setTimeout(saveDraft,250); }
+  function clearDraft(){ clearTimeout(draftSaveTimer); try{ localStorage.removeItem(DRAFT_KEY); }catch{} }
+  function restoreDraft(){
+    try{
+      const draft=JSON.parse(localStorage.getItem(DRAFT_KEY)||"null");
+      if(!isPlainObject(draft)) return false;
+      const title=typeof draft.title==="string"?draft.title:"", tags=typeof draft.tags==="string"?draft.tags:"", body=typeof draft.body==="string"?draft.body:"";
+      if(!title.trim()&&!tags.trim()&&!body.trim()) return false;
+      $("titleInput").value=title.slice(0,500); $("tagsInput").value=tags.slice(0,1000); $("bodyInput").value=body.slice(0,500000);
+      selectedType=TYPES.some(t=>t.key===draft.type)?draft.type:"memo"; $("typeInput").value=selectedType; renderTypeGrid();
+      return true;
+    }catch{ try{ localStorage.removeItem(DRAFT_KEY); }catch{} return false; }
+  }
+  function requireComposerField(id,message){ const el=$(id); el.setAttribute("aria-invalid","true"); el.focus(); toast(message); return false; }
 
   function normalizeNote(n){
     const aiSummary = n.aiSummary || "";
@@ -1366,14 +1390,14 @@
     const typeInput = $("typeInput");
     typeInput.innerHTML = TYPES.map(t => `<option value="${t.key}">${t.icon} ${t.label}</option>`).join("");
     typeInput.value = selectedType;
-    typeInput.onchange = () => { selectedType = typeInput.value; renderTypeGrid(); };
+    typeInput.onchange = () => { selectedType = typeInput.value; renderTypeGrid(); scheduleDraftSave(); };
     renderTypeGrid();
     const filter = $("filterType");
     filter.innerHTML = `<option value="all">すべての種類</option>` + TYPES.map(t => `<option value="${t.key}">${t.icon} ${t.label}</option>`).join("");
   }
   function renderTypeGrid(){
     $("typeGrid").innerHTML = TYPES.map(t => `<button type="button" class="type-chip ${selectedType===t.key ? "active" : ""}" data-type="${t.key}" aria-pressed="${selectedType===t.key}">${t.icon}<br>${t.label}</button>`).join("");
-    $("typeGrid").querySelectorAll(".type-chip").forEach(el => el.onclick = () => { selectedType = el.dataset.type; $("typeInput").value = selectedType; renderTypeGrid(); });
+    $("typeGrid").querySelectorAll(".type-chip").forEach(el => el.onclick = () => { selectedType = el.dataset.type; $("typeInput").value = selectedType; renderTypeGrid(); scheduleDraftSave(); });
   }
 
 
@@ -1463,8 +1487,8 @@
     const titleRaw = $("titleInput").value.trim();
     const body = $("bodyInput").value.trim();
     const type = $("typeInput").value || selectedType || "memo";
-    if(!titleRaw) return toast("タイトルを入力してください。");
-    if(!body) return toast("本文を入力してください。");
+    if(!titleRaw) return requireComposerField("titleInput","タイトルを入力してください。");
+    if(!body) return requireComposerField("bodyInput","本文を入力してください。");
     const manualTags = parseList($("tagsInput").value, 10);
     const textTags = extractTagsFromText(body);
     const tags = [...new Set([...manualTags, ...textTags])].slice(0,10);
@@ -1475,7 +1499,7 @@
     });
     if(!saveNotes([...notes,note])) return;
     selectedId = note.id; focusedNodeId = note.id;
-    $("titleInput").value = ""; $("bodyInput").value = ""; $("tagsInput").value = ""; clearImage(false);
+    $("titleInput").value = ""; $("bodyInput").value = ""; $("tagsInput").value = ""; clearDraft(); clearImage(false);
     initPhysics(true); render(); closeMobileSheet(); closeDesktopComposer(); toast("星片を1つ綴りました。✦");
   }
 
@@ -2304,7 +2328,11 @@
     selectedId=null; focusedNodeId=null;
     pendingDeleteId=null; closeModal("deleteNoteModal"); render(); toast("削除しました。星図に戻りました。");
   }
-  function clearAll(){ if(!saveNotes([])) return; saveTagStyles({}); clearNodeLayouts(); selectedId=null; focusedNodeId=null; physics={}; closeModal("confirmModal"); render(); toast("すべて削除しました。"); }
+  function clearAll(){
+    try{ commitImportedData([],{},{}); }
+    catch(error){ toast(error?.message||"削除に失敗しました。データは変更していません。"); return; }
+    selectedId=null; focusedNodeId=null; physics={}; closeModal("confirmModal"); render(); toast("すべて削除しました。");
+  }
 
   function noteToMarkdown(n){
     const t=typeInfo(n.type);
@@ -2326,9 +2354,9 @@
   async function selectCopyText(){ const area=$("copyTextArea"); currentCopyText=area.value; area.focus(); area.select(); const ok=await tryCopyText(currentCopyText); toast(ok ? "コピーを試しました。" : "手動でコピーしてください。"); }
   async function shareCopyText(){ if(!currentCopyText) return toast("共有する文章がありません。"); try{ if(navigator.share){ await navigator.share({title:"星図帖", text:currentCopyText}); toast("共有しました。"); } else toast("このブラウザでは共有機能が使えません。"); }catch{ toast("共有をキャンセルしました。"); } }
   function downloadCopyText(){ if(!currentCopyText) return toast("保存する文章がありません。"); downloadBlob(new Blob([currentCopyText],{type:"text/plain"}),"hoshizucho-text.txt"); toast("TXT保存しました。"); }
-  function exportJSON(){ downloadBlob(new Blob([JSON.stringify({app:"星図帖",version:"1.1",exportedAt:new Date().toISOString(),notes,tagStyles,nodeLayouts},null,2)],{type:"application/json"}),"hoshizucho-v1-backup.json"); toast("星片・タグの見た目・星の配置をJSONへ書き出しました。"); }
-  function exportMarkdownAll(){ downloadBlob(new Blob([notes.map(noteToMarkdown).join("\n\n---\n\n")],{type:"text/markdown"}),"hoshizucho-v1-notes.md"); toast("Markdownを書き出しました。"); }
-  function downloadBlob(blob,filename){ const url=URL.createObjectURL(blob), a=document.createElement("a"); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); }
+  function exportJSON(){ downloadBlob(new Blob([JSON.stringify({app:"星図帖",version:"1.1",exportedAt:new Date().toISOString(),notes,tagStyles,nodeLayouts},null,2)],{type:"application/json"}),"hoshizucho-v1.1-backup.json"); toast("星片・タグの見た目・星の配置をJSONへ書き出しました。"); }
+  function exportMarkdownAll(){ downloadBlob(new Blob([notes.map(noteToMarkdown).join("\n\n---\n\n")],{type:"text/markdown"}),"hoshizucho-v1.1-notes.md"); toast("Markdownを書き出しました。"); }
+  function downloadBlob(blob,filename){ const url=URL.createObjectURL(blob), a=document.createElement("a"); a.href=url; a.download=filename; a.hidden=true; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000); }
   function importJSON(file){
     if(!file || file.size>MAX_IMPORT_BYTES) return toast("JSONが大きすぎます。30MB以下のバックアップを選んでください。");
     const reader = new FileReader();
@@ -2402,7 +2430,11 @@
       }
       return;
     }
-    if(e.key==="Escape" && document.body.classList.contains("desktop-compose-open")) closeDesktopComposer(true);
+    if((e.ctrlKey||e.metaKey) && e.key==="Enter" && isComposerVisible()){ e.preventDefault(); addNote(); return; }
+    if(e.key==="Escape" && document.body.classList.contains("desktop-compose-open")){ e.preventDefault(); closeDesktopComposer(true); return; }
+    if(isTextEntry(e.target)) return;
+    if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key==="/"){ e.preventDefault(); $("searchInput").focus(); return; }
+    if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key.toLowerCase()==="n"){ e.preventDefault(); if(isMobileUX()) setMobileSheet("compose"); else openDesktopComposer(); $("titleInput").focus(); }
   }
   function toast(msg){ const el=$("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.classList.remove("show"),2300); }
 
@@ -2421,10 +2453,15 @@
     $("clearBtn").onclick = () => showModal("confirmModal"); $("cancelClearBtn").onclick = () => closeModal("confirmModal"); $("doClearBtn").onclick = clearAll; $("confirmModal").onclick = e => { if(e.target.id === "confirmModal") closeModal("confirmModal"); };
     $("cancelDeleteNoteBtn").onclick = () => { pendingDeleteId=null; closeModal("deleteNoteModal"); }; $("confirmDeleteNoteBtn").onclick = forceDelete; $("deleteNoteModal").onclick = e => { if(e.target.id === "deleteNoteModal"){ pendingDeleteId=null; closeModal("deleteNoteModal"); } };
     $("selectCopyTextBtn").onclick = selectCopyText; $("shareCopyTextBtn").onclick = shareCopyText; $("downloadCopyTextBtn").onclick = downloadCopyText; $("closeCopyTextBtn").onclick = () => closeModal("copyTextModal"); $("copyTextModal").onclick = e => { if(e.target.id === "copyTextModal") closeModal("copyTextModal"); };
-    $("exportBtn").onclick = () => confirm("JSONでバックアップしますか？\n\nOK：JSON\nキャンセル：Markdown") ? exportJSON() : exportMarkdownAll();
+    $("exportBtn").onclick = () => showModal("exportModal");
+    $("cancelExportBtn").onclick = () => closeModal("exportModal");
+    $("exportJsonBtn").onclick = () => { closeModal("exportModal",false); exportJSON(); };
+    $("exportMarkdownBtn").onclick = () => { closeModal("exportModal",false); exportMarkdownAll(); };
+    $("exportModal").onclick = e => { if(e.target.id === "exportModal") closeModal("exportModal"); };
     $("importBtn").onclick = () => $("importFile").click(); $("importFile").onchange = e => { const file=e.target.files[0]; if(file) importJSON(file); e.target.value=""; };
     $("imageBtn").onclick = () => $("imageInput").click(); $("imageInput").onchange = e => handleImage(e.target.files[0]); $("removeImageBtn").onclick = () => clearImage(true);
     $("searchInput").oninput = () => { listPage=0; render(); }; $("filterType").onchange = () => { listPage=0; render(); }; $("clearSearchBtn").onclick = () => { $("searchInput").value=""; $("filterType").value="all"; listPage=0; render(); }; $("prevPageBtn").onclick = () => { listPage=Math.max(0,listPage-1); render(); }; $("nextPageBtn").onclick = () => { listPage=listPage+1; render(); };
+    for(const id of ["titleInput","tagsInput","bodyInput"]){ $(id).addEventListener("input",()=>{ $(id).removeAttribute("aria-invalid"); scheduleDraftSave(); }); }
     $("graphTagFilter").onchange = e => setGraphTagFilter(e.target.value);
     $("shakeBtn").onclick = shakeGraph; $("zoomOutBtn").onclick = () => setZoom(view.scale/1.2); $("zoomInBtn").onclick = () => setZoom(view.scale*1.2); $("resetViewBtn").onclick = resetView;
     canvas.addEventListener("mousedown", onDown); canvas.addEventListener("mousemove", onMove);
@@ -2441,7 +2478,8 @@
     document.addEventListener("visibilitychange", () => { if(document.hidden) stopCanvasScheduling(); else resumeCanvasAfterComposer(); });
   }
 
-  setupTypes(); bindEvents(); resize(); initPhysics(false); render(); requestCanvasFrame(); updateZoomLabel();
+  setupTypes(); const draftRestored=restoreDraft(); bindEvents(); resize(); initPhysics(false); render(); requestCanvasFrame(); updateZoomLabel();
+  if(draftRestored) setTimeout(()=>toast("入力途中の下書きを復元しました。"),0);
   if(storageLoadFailed) setTimeout(()=>toast("保存データを読み込めなかったため、上書きを停止しています。"),0);
 })();
 </script>
