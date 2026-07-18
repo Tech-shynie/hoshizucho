@@ -1,0 +1,2449 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>星図帖 Version 1.0</title>
+  <meta name="theme-color" content="#111218" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="星図帖" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+    :root{
+      --bg:#111218; --bg2:#14151A; --panel:#1B1D24; --panel2:#20232B; --panel3:#15171D;
+      --border:#2B2F39; --border2:#3A3F4D; --text:#ECE8DE; --sub:#9A9DAA; --muted:#6F7380;
+      --gold:#C9A24A; --gold2:#D8C48A; --gold-soft:#7D6B3A; --edge:#444957;
+      --danger:#C1666B; --ok:#9FC9A8; --shadow:0 24px 70px rgba(0,0,0,.42);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--text)}
+    body{
+      overflow:hidden;
+      font-family:'Zen Kaku Gothic New',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+      background:
+        radial-gradient(circle at 74% 16%,rgba(201,162,74,.11),transparent 26%),
+        radial-gradient(circle at 18% 78%,rgba(138,180,255,.06),transparent 28%),
+        linear-gradient(180deg,#15161C 0%,#101116 100%);
+    }
+    .font-display{font-family:'Shippori Mincho','Hiragino Mincho ProN',serif}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .app{height:100vh;display:flex;flex-direction:column;min-height:0;position:relative;overflow:hidden}
+    .app::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.65'/%3E%3C/svg%3E")}
+    header{height:62px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 18px;background:rgba(17,18,24,.86);backdrop-filter:blur(18px);z-index:10;flex-shrink:0}
+    .brand{display:flex;align-items:baseline;gap:10px;min-width:0}.brand h1{margin:0;color:var(--gold);font-size:20px;letter-spacing:.105em;white-space:nowrap}.version{font-size:11px;color:var(--sub);border:1px solid rgba(201,162,74,.22);border-radius:999px;padding:2px 7px;background:rgba(201,162,74,.08)}
+    .header-actions{display:flex;align-items:center;gap:8px;min-width:0}
+    button,.buttonish{border:1px solid var(--border);background:rgba(27,29,36,.95);color:var(--text);border-radius:12px;padding:8px 11px;cursor:pointer;font:inherit;font-size:12px;transition:.16s ease;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+    button:hover,.buttonish:hover{border-color:var(--gold-soft);transform:translateY(-1px);background:rgba(32,35,43,.98)}button.primary{border-color:transparent;background:linear-gradient(135deg,#D8C48A,#C9A24A);color:#161616;font-weight:700}button.danger{border-color:transparent;background:var(--danger);color:#fff}button.ghost{background:transparent;color:var(--sub)}button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    input,textarea,select{width:100%;border:1px solid var(--border);border-radius:13px;background:var(--panel3);color:var(--text);outline:none;padding:10px 11px;font:inherit;font-size:13px;line-height:1.5}textarea{resize:vertical;min-height:112px}input:focus,textarea:focus,select:focus{border-color:rgba(201,162,74,.72);box-shadow:0 0 0 3px rgba(201,162,74,.11)}label{font-size:11px;color:var(--sub);font-weight:700;letter-spacing:.04em;display:block;margin:0 0 6px}.workspace{flex:1;min-height:0;display:grid;grid-template-columns:392px minmax(0,1fr);overflow:hidden}.side{border-right:1px solid var(--border);background:rgba(17,18,24,.70);display:flex;flex-direction:column;min-height:0}.side-scroll{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}.panel{border:1px solid var(--border);border-radius:var(--radius);background:rgba(27,29,36,.84);box-shadow:0 12px 36px rgba(0,0,0,.22);overflow:hidden}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;border-bottom:1px solid rgba(255,255,255,.055);background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0))}.panel-title{font-weight:700;color:var(--gold2);letter-spacing:.04em}.panel-body{padding:14px;display:flex;flex-direction:column;gap:11px}.row{display:grid;grid-template-columns:1fr 128px;gap:9px}.mini-row{display:grid;grid-template-columns:1fr 114px;gap:8px}.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.type-chip{border:1px solid var(--border);background:rgba(21,23,29,.78);border-radius:13px;padding:9px 7px;text-align:center;font-size:12px;color:var(--sub);cursor:pointer;user-select:none;transition:.14s}.type-chip.active{border-color:rgba(201,162,74,.75);background:rgba(201,162,74,.12);color:var(--text);box-shadow:inset 0 0 0 1px rgba(201,162,74,.12)}.composer-actions{display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap}.hint{color:var(--muted);font-size:11px;line-height:1.6}.image-preview{display:none;align-items:center;gap:8px;border:1px dashed rgba(201,162,74,.32);border-radius:13px;padding:8px;background:rgba(201,162,74,.045)}.image-preview.show{display:flex}.image-preview img{width:44px;height:44px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}.file-input{display:none}.search-box{padding:12px;border-bottom:1px solid rgba(255,255,255,.055);display:flex;flex-direction:column;gap:8px}.stats{display:flex;gap:6px;flex-wrap:wrap}.stat{font-size:11px;color:var(--sub);border:1px solid var(--border);background:rgba(21,23,29,.66);padding:4px 8px;border-radius:999px}.list{display:flex;flex-direction:column;gap:8px;max-height:42vh;overflow:auto;padding:12px}.empty{color:var(--sub);font-size:13px;line-height:1.75;padding:4px}.note-card{border:1px solid var(--border);border-left:4px solid var(--gold2);background:rgba(32,35,43,.82);border-radius:15px;padding:11px;cursor:pointer;transition:.15s ease;position:relative}.note-card:hover{border-color:var(--gold-soft)}.note-card.active{border-color:var(--gold);background:rgba(201,162,74,.10)}.note-card-title{font-weight:700;font-size:13px;display:flex;align-items:center;gap:7px;margin-bottom:5px}.note-card-body{color:var(--sub);font-size:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.note-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px}.tag,.kind,.keyword{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 7px;font-size:11px;border:1px solid rgba(201,162,74,.20);background:rgba(201,162,74,.11);color:var(--gold2)}.kind{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.045);color:#C9CBD3}.keyword{border-color:rgba(138,180,255,.18);background:rgba(138,180,255,.08);color:#BFD7FF}.graph-area{position:relative;min-width:0;min-height:0;background:#101116;overflow:hidden}.graph-toolbar{position:absolute;z-index:4;top:14px;left:14px;right:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;pointer-events:none}.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:7px;flex-wrap:wrap;pointer-events:auto}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:rgba(27,29,36,.72);backdrop-filter:blur(12px);border-radius:999px;padding:6px 10px;font-size:12px;color:var(--sub)}.zoom-value{min-width:48px;text-align:center;color:var(--sub);font-size:11px;border:1px solid var(--border);background:rgba(27,29,36,.72);border-radius:10px;padding:7px 6px;backdrop-filter:blur(12px)}.zoom-button{min-width:36px;font-size:17px;line-height:1}.canvas-wrap,canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}.detail{position:absolute;right:16px;bottom:16px;width:min(500px,calc(100% - 32px));max-height:min(720px,calc(100% - 88px));overflow:auto;background:rgba(27,29,36,.96);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);z-index:6;padding:16px}.detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}.detail h2{margin:0;font-size:19px;letter-spacing:.04em}.detail-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.section{margin-top:13px;border:1px solid var(--border);border-radius:16px;background:rgba(21,23,29,.56);padding:12px}.section-label{color:var(--sub);font-size:11px;font-weight:700;letter-spacing:.05em;margin-bottom:7px}.section.ai{border-color:rgba(201,162,74,.25);background:rgba(201,162,74,.055)}.section.ai .section-label{color:var(--gold2)}.markdown{font-size:14px;line-height:1.85;white-space:pre-wrap;word-break:break-word}.markdown h1,.markdown h2,.markdown h3{margin:.55em 0 .25em;color:var(--gold2);line-height:1.35}.markdown strong{color:#fff}.markdown code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#111218;border:1px solid var(--border);border-radius:6px;padding:1px 5px;color:var(--gold2)}.detail-image{width:100%;max-height:260px;object-fit:cover;border-radius:16px;border:1px solid var(--border);margin-top:8px}.edit-tools{margin-top:13px;padding:13px;border:1px solid rgba(201,162,74,.22);border-radius:18px;background:linear-gradient(180deg,rgba(201,162,74,.08),rgba(21,23,29,.58))}.edit-tools[hidden]{display:none!important}.edit-grid{display:grid;grid-template-columns:1fr 130px;gap:9px}.edit-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px}.link-tools{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}.link-tools select{flex:1;min-width:160px}.linked-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.link-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(138,180,255,.22);background:rgba(138,180,255,.08);border-radius:999px;padding:4px 8px;color:#C9D8FF;font-size:12px}.link-chip button{padding:0 3px;border:none;background:transparent;color:#C9D8FF;min-width:0}.modal-bg{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.62);z-index:50;padding:18px}.modal-bg.show{display:flex}.modal{width:min(680px,100%);max-height:86vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:22px;box-shadow:var(--shadow);padding:20px;line-height:1.75}.modal h2{margin-top:0;color:var(--gold2)}.modal ul{padding-left:1.25em}.modal code{background:#111218;border:1px solid var(--border);border-radius:7px;padding:2px 5px;color:var(--gold2)}.copy-textarea{min-height:260px}.toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,12px);opacity:0;background:rgba(27,29,36,.97);border:1px solid var(--gold-soft);color:var(--text);border-radius:14px;padding:11px 14px;z-index:70;box-shadow:var(--shadow);font-size:13px;transition:.18s ease;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:980px){body{overflow:auto}.app{height:auto;min-height:100vh;overflow:visible}.workspace{grid-template-columns:1fr;overflow:visible}.side{border-right:none;border-bottom:1px solid var(--border);max-height:none}.side-scroll{max-height:none}.list{max-height:30vh}.graph-area{min-height:62vh}.detail{position:fixed;left:10px;right:10px;bottom:10px;width:auto;max-height:76vh}.row,.mini-row,.edit-grid{grid-template-columns:1fr}.type-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:620px){header{height:auto;min-height:56px;padding:8px 9px;align-items:center}.brand{gap:6px}.brand h1{font-size:18px;writing-mode:horizontal-tb;line-height:1;white-space:nowrap}.version{display:none}.header-actions{gap:3px;margin-left:auto}.header-actions button{font-size:10px;padding:6px 6px;border-radius:9px}.side-scroll{padding:10px}.panel-body{padding:11px}.type-grid{grid-template-columns:repeat(2,1fr)}.graph-toolbar{top:8px;left:8px;right:8px}.toolbar-left .pill{display:none}.toolbar-right{margin-left:auto;gap:4px}.toolbar-right button{font-size:10px;padding:7px 7px}.zoom-value{display:none}.composer-actions button.primary{width:100%;height:44px}.list{max-height:34vh}.detail{border-radius:18px;padding:13px}.detail-actions button{font-size:11px;padding:7px 8px}.modal{padding:16px}.toast{width:calc(100% - 24px);text-align:center}}
+
+
+    /* ===== Version 1.0 refinement layer: product polish, no new feature ===== */
+    :root{
+      --ease-standard:cubic-bezier(.2,.8,.2,1);
+      --ease-soft:cubic-bezier(.16,1,.3,1);
+      --surface-glass:rgba(27,29,36,.74);
+      --surface-glass-strong:rgba(27,29,36,.92);
+      --hairline:rgba(236,232,222,.075);
+      --focus-ring:0 0 0 3px rgba(201,162,74,.16);
+    }
+    html{color-scheme:dark;-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}
+    body{-webkit-font-smoothing:antialiased;letter-spacing:.01em}
+    ::selection{background:rgba(201,162,74,.34);color:#fff}
+    .app::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.035),transparent 34%,rgba(201,162,74,.03));opacity:.42;mix-blend-mode:screen}
+    header{height:60px;padding:0 20px;border-bottom-color:var(--hairline);box-shadow:0 12px 40px rgba(0,0,0,.18)}
+    .brand h1{font-size:19px;letter-spacing:.12em;text-shadow:0 0 22px rgba(201,162,74,.18)}
+    .version{border-color:rgba(201,162,74,.18);background:rgba(201,162,74,.055);color:#BFB6A0}
+    .workspace{grid-template-columns:376px minmax(0,1fr)}
+    .side{background:linear-gradient(180deg,rgba(17,18,24,.74),rgba(17,18,24,.58));border-right-color:var(--hairline)}
+    .side-scroll{padding:16px;gap:14px;scrollbar-gutter:stable}
+    .side-scroll,.list,.detail,.modal{scrollbar-width:thin;scrollbar-color:rgba(201,162,74,.28) rgba(255,255,255,.04)}
+    .side-scroll::-webkit-scrollbar,.list::-webkit-scrollbar,.detail::-webkit-scrollbar,.modal::-webkit-scrollbar{width:8px;height:8px}
+    .side-scroll::-webkit-scrollbar-thumb,.list::-webkit-scrollbar-thumb,.detail::-webkit-scrollbar-thumb,.modal::-webkit-scrollbar-thumb{background:rgba(201,162,74,.25);border-radius:999px}
+    .side-scroll::-webkit-scrollbar-track,.list::-webkit-scrollbar-track,.detail::-webkit-scrollbar-track,.modal::-webkit-scrollbar-track{background:rgba(255,255,255,.035)}
+    .panel{border-color:var(--hairline);background:linear-gradient(180deg,rgba(31,33,41,.76),rgba(24,26,33,.72));box-shadow:0 18px 52px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.035)}
+    .panel-head{padding:12px 14px;border-bottom-color:rgba(236,232,222,.055);background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012))}
+    .panel-title{font-size:13px;color:#D8C48A;letter-spacing:.08em}
+    .panel-body{gap:12px}
+    label{color:#A8A39A;font-size:10.5px;letter-spacing:.08em}
+    input,textarea,select{border-color:rgba(236,232,222,.08);background:rgba(13,15,20,.72);box-shadow:inset 0 1px 0 rgba(255,255,255,.025);transition:border-color .16s var(--ease-standard),box-shadow .16s var(--ease-standard),background .16s var(--ease-standard)}
+    textarea{line-height:1.72}
+    input::placeholder,textarea::placeholder{color:rgba(154,157,170,.62)}
+    input:focus,textarea:focus,select:focus{background:rgba(15,17,22,.92);border-color:rgba(201,162,74,.62);box-shadow:var(--focus-ring),inset 0 1px 0 rgba(255,255,255,.04)}
+    button,.buttonish{min-height:34px;border-color:rgba(236,232,222,.09);background:rgba(26,28,35,.78);box-shadow:inset 0 1px 0 rgba(255,255,255,.035);transition:transform .16s var(--ease-soft),border-color .16s var(--ease-standard),background .16s var(--ease-standard),box-shadow .16s var(--ease-standard)}
+    button:hover,.buttonish:hover{transform:translateY(-1px);background:rgba(34,37,46,.88);box-shadow:0 10px 26px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.045)}
+    button:active,.buttonish:active{transform:translateY(0)}
+    button:focus-visible,.buttonish:focus-visible,.type-chip:focus-visible,.note-card:focus-visible{outline:none;box-shadow:var(--focus-ring),inset 0 1px 0 rgba(255,255,255,.04)}
+    button.primary{min-height:40px;box-shadow:0 10px 26px rgba(201,162,74,.18),inset 0 1px 0 rgba(255,255,255,.22)}
+    button.danger{background:rgba(193,102,107,.86);box-shadow:none}
+    button.ghost{background:rgba(255,255,255,.012);color:#A7AAB5}
+    details{border:1px solid rgba(236,232,222,.07);border-radius:16px;background:rgba(12,14,19,.32);padding:10px 11px}
+    summary{cursor:pointer;list-style:none;user-select:none}
+    summary::-webkit-details-marker{display:none}
+    summary::before{content:"＋";display:inline-grid;place-items:center;width:18px;height:18px;margin-right:7px;border:1px solid rgba(201,162,74,.22);border-radius:999px;color:#D8C48A;font-size:11px;vertical-align:middle;background:rgba(201,162,74,.06)}
+    details[open] summary::before{content:"−"}
+    .type-grid{gap:8px}
+    .type-chip{border-color:rgba(236,232,222,.08);background:rgba(12,14,19,.48);padding:10px 7px;border-radius:14px;line-height:1.45}
+    .type-chip:hover{border-color:rgba(201,162,74,.34);background:rgba(201,162,74,.055)}
+    .type-chip.active{border-color:rgba(201,162,74,.62);background:linear-gradient(180deg,rgba(201,162,74,.15),rgba(201,162,74,.065));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 24px rgba(201,162,74,.07)}
+    .hint{color:#858998}
+    .stat{border-color:rgba(236,232,222,.075);background:rgba(12,14,19,.42);color:#989BA7}
+    .search-box{padding:13px;border-bottom-color:rgba(236,232,222,.055)}
+    .list{padding:13px;gap:9px;max-height:39vh}
+    .note-card{border-color:rgba(236,232,222,.075);background:linear-gradient(180deg,rgba(35,38,47,.72),rgba(24,26,33,.78));box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+    .note-card:hover{border-color:rgba(201,162,74,.36);background:linear-gradient(180deg,rgba(39,42,52,.82),rgba(27,29,36,.86));transform:translateY(-1px)}
+    .note-card.active{border-color:rgba(201,162,74,.74);background:linear-gradient(180deg,rgba(201,162,74,.12),rgba(27,29,36,.86));box-shadow:0 12px 28px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.035)}
+    .note-card-title{font-size:13.2px;letter-spacing:.02em}.note-card-body{color:#9B9EAA}.tag,.kind,.keyword{border-color:rgba(201,162,74,.16);background:rgba(201,162,74,.08)}
+    .graph-area{background:radial-gradient(circle at 50% 45%,rgba(201,162,74,.055),transparent 24%),radial-gradient(circle at 18% 24%,rgba(138,180,255,.035),transparent 22%),linear-gradient(180deg,#101116,#0D0E13)}
+    .graph-area::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at center,transparent 30%,rgba(0,0,0,.28) 100%);z-index:1}.graph-area canvas{z-index:0}.graph-toolbar{z-index:5}.detail{z-index:8}
+    .graph-toolbar{top:16px;left:16px;right:16px}.pill{padding:5px 9px;font-size:11px;color:rgba(190,192,201,.72);border-color:rgba(236,232,222,.07);background:rgba(15,17,22,.44)}
+    .graph-tag-filter{width:auto;max-width:170px;min-width:132px;min-height:34px;padding:6px 30px 6px 10px;border-radius:999px;background:rgba(27,29,36,.76);backdrop-filter:blur(12px);font-size:11px;color:var(--gold2)}
+    .zoom-value{border-color:rgba(236,232,222,.07);background:rgba(15,17,22,.44)}
+    .detail{border-color:rgba(236,232,222,.10);background:linear-gradient(180deg,rgba(31,33,41,.97),rgba(22,24,31,.97));box-shadow:0 28px 90px rgba(0,0,0,.50),inset 0 1px 0 rgba(255,255,255,.045);animation:detailIn .22s var(--ease-soft)}
+    @keyframes detailIn{from{opacity:0;transform:scale(.984)}to{opacity:1;transform:scale(1)}}
+    .detail h2{font-size:20px;line-height:1.46;margin-top:7px;letter-spacing:.055em}.detail-actions{gap:7px}
+    .section{border-color:rgba(236,232,222,.08);background:rgba(12,14,19,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.025)}
+    .section.ai{border-color:rgba(201,162,74,.20);background:rgba(201,162,74,.045)}
+    .section-label{color:#9C9FAA;font-size:10.5px;letter-spacing:.105em}.markdown{color:#E7E2D8;line-height:1.9}.markdown h1,.markdown h2,.markdown h3{color:#D8C48A}.detail-image{box-shadow:0 14px 36px rgba(0,0,0,.25)}
+    .edit-tools{border-color:rgba(201,162,74,.20);background:linear-gradient(180deg,rgba(201,162,74,.07),rgba(12,14,19,.52));box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+    .link-chip{border-color:rgba(138,180,255,.18);background:rgba(138,180,255,.065)}
+    .swatchBtn{box-shadow:inset 0 0 0 1px rgba(0,0,0,.20);transition:transform .15s var(--ease-soft),box-shadow .15s var(--ease-standard),border-color .15s var(--ease-standard)}
+    .swatchBtn:hover{transform:translateY(-1px) scale(1.05);box-shadow:0 0 18px currentColor,inset 0 0 0 1px rgba(0,0,0,.20)}
+    .modal-bg.show{animation:modalFade .18s var(--ease-standard)}.modal{animation:modalIn .22s var(--ease-soft);border-color:rgba(236,232,222,.10);background:linear-gradient(180deg,rgba(31,33,41,.98),rgba(22,24,31,.98))}
+    @keyframes modalFade{from{opacity:0}to{opacity:1}}@keyframes modalIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:scale(1)}}@keyframes cardIn{from{opacity:0;transform:scale(.992)}to{opacity:1;transform:scale(1)}}
+    .toast{border-color:rgba(201,162,74,.32);background:rgba(23,25,32,.97);box-shadow:0 18px 56px rgba(0,0,0,.36)}
+    @media(max-width:980px){.workspace{grid-template-columns:1fr}.side-scroll{padding:14px}.list{max-height:32vh}.graph-area{min-height:66vh}.detail{left:12px;right:12px;bottom:12px;max-height:78vh;border-radius:22px}}
+    @media(max-width:620px){header{padding:8px 10px}.brand h1{font-size:18px;letter-spacing:.10em}.header-actions{gap:4px}.header-actions button{min-height:34px;padding:6px 7px}.side-scroll{padding:11px}.panel{border-radius:18px}.panel-head{padding:11px 12px}.panel-body{padding:12px}.type-grid{grid-template-columns:repeat(3,1fr);gap:6px}.type-chip{font-size:11px;padding:8px 5px}.graph-area{min-height:68vh}.graph-toolbar{top:9px;left:9px;right:9px}.toolbar-right button{min-height:34px}.detail{left:8px;right:8px;bottom:8px;max-height:80vh;border-radius:20px}.detail h2{font-size:18px}.section{padding:11px}.markdown{font-size:13.5px}.toast{bottom:12px}}
+    @media(max-width:620px){.graph-tag-filter{min-width:116px;max-width:138px;min-height:34px;padding:6px 25px 6px 9px;font-size:10.5px}}
+    @media(max-width:420px){
+      .header-actions button{
+        font-size:10px!important;
+        padding:6px 6px!important;
+        min-width:0;
+        letter-spacing:-.02em;
+      }
+      .header-actions button::after{content:none!important}
+      .header-actions button::first-letter{font-size:inherit}
+      .type-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}button:hover,.buttonish:hover,.note-card:hover{transform:none!important}}
+
+
+    /* v1.0 mobile scroll fix: 画像添付を開いても「綴る」まで到達できるようにする */
+    @media(max-width:980px){
+      .side-scroll{
+        overflow-y:auto;
+        -webkit-overflow-scrolling:touch;
+        overscroll-behavior-y:contain;
+      }
+      .side .panel:first-child .panel-body{
+        max-height:min(680px,calc(100dvh - 118px));
+        overflow-y:auto;
+        -webkit-overflow-scrolling:touch;
+        overscroll-behavior:contain;
+        scrollbar-gutter:stable;
+        padding-bottom:calc(76px + env(safe-area-inset-bottom));
+      }
+      .side .panel:first-child .panel-body > .composer-actions:last-child{
+        position:sticky;
+        bottom:0;
+        z-index:3;
+        margin:2px -2px -2px;
+        padding:11px 0 0;
+        background:linear-gradient(180deg,rgba(27,29,36,0),rgba(27,29,36,.96) 38%,rgba(27,29,36,.99));
+        backdrop-filter:blur(10px);
+      }
+    }
+    @media(max-width:620px){
+      .side .panel:first-child .panel-body{
+        max-height:calc(100dvh - 92px);
+        gap:10px;
+      }
+      .side .panel:first-child .panel-body > .composer-actions:last-child .hint{
+        display:none;
+      }
+      .side .panel:first-child #addBtn{
+        width:100%;
+        min-height:46px;
+      }
+      #bodyInput{min-height:118px;}
+    }
+
+
+    /* v1.0 scroll fix 2: デスクトップのフルスクリーンでも作成パネル内を確実にスクロール可能にする */
+    .side .panel:first-child{
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      max-height:min(620px,calc(100vh - 94px));
+    }
+    .side .panel:first-child .panel-head{
+      flex:0 0 auto;
+    }
+    .side .panel:first-child .panel-body{
+      flex:1 1 auto;
+      min-height:0;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior-y:contain;
+      scrollbar-gutter:stable;
+      padding-bottom:12px;
+    }
+    .side .panel:first-child .panel-body::-webkit-scrollbar{width:8px;height:8px}
+    .side .panel:first-child .panel-body::-webkit-scrollbar-thumb{background:rgba(201,162,74,.26);border-radius:999px}
+    .side .panel:first-child .panel-body::-webkit-scrollbar-track{background:rgba(255,255,255,.035)}
+    .side .panel:first-child .panel-body{
+      scrollbar-width:thin;
+      scrollbar-color:rgba(201,162,74,.28) rgba(255,255,255,.04);
+    }
+    .side .panel:first-child .panel-body > .composer-actions:last-child{
+      position:sticky;
+      bottom:-1px;
+      z-index:6;
+      margin:4px -2px -2px;
+      padding:12px 0 2px;
+      background:linear-gradient(180deg,rgba(27,29,36,0),rgba(27,29,36,.96) 36%,rgba(27,29,36,.995));
+      backdrop-filter:blur(12px);
+    }
+    .side .panel:first-child #addBtn{
+      min-width:96px;
+    }
+    @media(max-width:980px){
+      .side .panel:first-child{
+        max-height:min(720px,calc(100dvh - 90px));
+      }
+      .side .panel:first-child .panel-body{
+        padding-bottom:12px;
+      }
+    }
+    @media(max-width:620px){
+      .side .panel:first-child{
+        max-height:calc(100dvh - 82px);
+      }
+      .side .panel:first-child .panel-body > .composer-actions:last-child{
+        padding-top:10px;
+      }
+      .side .panel:first-child #addBtn{
+        width:100%;
+        min-height:46px;
+      }
+    }
+
+
+    /* v1.0 scroll fix 3: 綴るボタンの重なり解消・最近の星片を最後まで見えるように調整 */
+    .side .panel:first-child .panel-body > .composer-actions:last-child{
+      position:static!important;
+      z-index:auto!important;
+      margin:2px 0 0!important;
+      padding:10px 0 0!important;
+      background:transparent!important;
+      backdrop-filter:none!important;
+      border-top:1px solid rgba(236,232,222,.065);
+    }
+    .side .panel:first-child .panel-body{
+      padding-bottom:16px!important;
+      scroll-padding-bottom:24px;
+    }
+    #bodyInput{
+      scroll-margin-bottom:18px;
+    }
+    .list{
+      max-height:none!important;
+      overflow:visible!important;
+      padding-bottom:18px!important;
+    }
+    .side-scroll{
+      overflow-y:auto!important;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior-y:contain;
+      padding-bottom:calc(28px + env(safe-area-inset-bottom));
+    }
+    @media(max-width:620px){
+      .side .panel:first-child .panel-body > .composer-actions:last-child{
+        padding-top:12px!important;
+      }
+      .side .panel:first-child #addBtn{
+        width:min(112px,100%);
+      }
+      .composer-actions{
+        align-items:flex-start;
+      }
+    }
+
+
+    /* v1.0 scroll fix 4: 最近の星片リストを独立スクロールに戻し、末尾の星片まで到達できるようにする */
+    .side-scroll{
+      height:100%;
+      min-height:0;
+      overflow-y:auto!important;
+    }
+    .side .panel:nth-of-type(2){
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      flex:0 0 auto;
+    }
+    .side .panel:nth-of-type(2) .search-box{
+      flex:0 0 auto;
+    }
+    #noteList.list{
+      max-height:clamp(280px,calc(100vh - 540px),540px)!important;
+      min-height:180px;
+      overflow-y:auto!important;
+      overflow-x:hidden!important;
+      padding-bottom:calc(88px + env(safe-area-inset-bottom))!important;
+      scroll-padding-bottom:calc(88px + env(safe-area-inset-bottom));
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior-y:contain;
+      scrollbar-gutter:stable;
+    }
+    #noteList.list::after{
+      content:"";
+      display:block;
+      height:1px;
+      flex:0 0 1px;
+    }
+    @media(max-width:980px){
+      #noteList.list{
+        max-height:56vh!important;
+        min-height:260px;
+      }
+    }
+    @media(max-width:620px){
+      #noteList.list{
+        max-height:58vh!important;
+        min-height:280px;
+        padding-bottom:calc(104px + env(safe-area-inset-bottom))!important;
+        scroll-padding-bottom:calc(104px + env(safe-area-inset-bottom));
+      }
+    }
+
+
+    /* v1.0 scroll fix 5: 最近の星片を5件ごとのページ管理にして、綴る欄との圧迫を抑える */
+    #noteList.list{
+      max-height:none!important;
+      min-height:0!important;
+      overflow:visible!important;
+      padding-bottom:0!important;
+      scroll-padding-bottom:0!important;
+    }
+    .list-pager{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:0 13px 13px;
+      border-top:1px solid rgba(236,232,222,.055);
+      background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,0));
+    }
+    .pager-status{
+      color:var(--sub);
+      font-size:11px;
+      letter-spacing:.04em;
+      text-align:center;
+      flex:1;
+      white-space:nowrap;
+    }
+    .pager-button{
+      min-width:42px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:13px;
+    }
+    .pager-button:disabled{
+      opacity:.34;
+    }
+    @media(max-width:620px){
+      .note-card{padding:10px 11px;}
+      .list-pager{padding:0 11px 12px;}
+      .pager-button{min-width:44px;min-height:38px;}
+    }
+
+
+    /* v1.0 scroll fix 6: 最近の星片を4件表示にし、綴る欄の余白を少し広げる */
+    #bodyInput{
+      min-height:128px;
+    }
+    .side .panel:first-child .panel-body{
+      gap:12px;
+    }
+    #noteList.list{
+      gap:8px;
+      padding-top:11px!important;
+      padding-bottom:8px!important;
+    }
+    .list-pager{
+      padding:0 13px 11px;
+    }
+    @media(min-width:981px){
+      .side .panel:first-child{
+        max-height:min(660px,calc(100vh - 220px));
+      }
+      #bodyInput{
+        min-height:132px;
+      }
+    }
+    @media(max-width:620px){
+      #bodyInput{
+        min-height:132px;
+      }
+      .side .panel:first-child .panel-body{
+        gap:12px;
+      }
+      .list-pager{
+        padding:0 11px 10px;
+      }
+    }
+
+
+    /* v1.0 final polish: 星図を主役にし、既存UIを最小限だけ整える */
+    @media(min-width:981px){
+      .workspace{grid-template-columns:420px minmax(0,1fr)!important;}
+      .side-scroll{padding:14px 13px;gap:13px;}
+      .graph-toolbar{top:15px;left:16px;right:16px;}
+    }
+    .side{background:linear-gradient(180deg,rgba(17,18,24,.66),rgba(17,18,24,.52));}
+    .panel{box-shadow:0 10px 30px rgba(0,0,0,.20);}
+    .panel-head{padding-top:12px;padding-bottom:12px;}
+    .panel-title{font-size:13px;letter-spacing:.065em;}
+    #noteList.list{gap:9px;}
+    .note-card{padding:10px 11px;border-radius:14px;background:rgba(30,33,41,.78);animation:cardIn .18s var(--ease-standard);} 
+    .note-card-title{font-size:13px;line-height:1.35;margin-bottom:5px;}
+    .note-card-body{font-size:12px;line-height:1.58;}
+    .note-meta{margin-top:7px;gap:5px;}
+    .tag,.kind,.keyword{font-size:10.5px;padding:2px 6px;}
+    .list-pager{padding:1px 12px 12px;gap:10px;}
+    .pager-status{font-size:10.5px;color:rgba(236,232,222,.58);}
+    .pager-button{min-width:38px;min-height:32px;background:rgba(21,23,29,.48);border-color:rgba(236,232,222,.10);}
+    .pager-button:not(:disabled):hover{border-color:rgba(201,162,74,.38);background:rgba(201,162,74,.07);}
+    .pill{padding:5px 9px;font-size:11px;background:rgba(27,29,36,.58);color:rgba(236,232,222,.58);}
+    .toolbar-right button,.zoom-value{background:rgba(27,29,36,.66);}
+    .graph-empty{position:absolute;inset:0;z-index:3;display:none;place-items:center;text-align:center;pointer-events:none;color:rgba(236,232,222,.58);}
+    .graph-empty.show{display:grid;}
+    .graph-empty-star{font-size:44px;line-height:1;color:rgba(216,196,138,.78);text-shadow:0 0 26px rgba(216,196,138,.26);margin-bottom:10px;}
+    .graph-empty-text{font-size:14px;letter-spacing:.04em;}
+    .empty{display:flex;align-items:center;justify-content:center;min-height:118px;text-align:center;color:rgba(236,232,222,.56);font-size:13px;line-height:1.8;padding:18px 10px;}
+    @media(max-width:980px){
+      .graph-empty-star{font-size:38px;}
+      .graph-empty-text{font-size:13px;}
+    }
+
+
+
+    /* v1.0 final polish 4: 見た目の色を星とタイトルで個別選択・自由色・編集状態維持 */
+    /* v1.0 final polish 2: 見た目編集の説明強化・星片の記憶・控えめなガラス質感 */
+    @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+      .panel,
+      .detail,
+      .modal{
+        background:
+          linear-gradient(145deg,rgba(255,255,255,.092),rgba(255,255,255,.030) 36%,rgba(14,16,22,.66)),
+          rgba(25,28,36,.56)!important;
+        border-color:rgba(236,232,222,.145)!important;
+        -webkit-backdrop-filter:blur(22px) saturate(1.22);
+        backdrop-filter:blur(22px) saturate(1.22);
+        box-shadow:
+          0 24px 64px rgba(0,0,0,.32),
+          inset 0 1px 0 rgba(255,255,255,.105),
+          inset 1px 0 0 rgba(255,255,255,.038),
+          inset 0 -1px 0 rgba(255,255,255,.032)!important;
+      }
+      .panel-head{
+        background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.012))!important;
+        border-bottom-color:rgba(236,232,222,.075)!important;
+      }
+      .search-box,
+      .section,
+      .edit-tools,
+      details{
+        background:rgba(12,14,20,.34)!important;
+        border-color:rgba(236,232,222,.08)!important;
+        -webkit-backdrop-filter:blur(14px) saturate(1.12);
+        backdrop-filter:blur(14px) saturate(1.12);
+      }
+    }
+    .appearance-editor{
+      border:1px solid rgba(236,232,222,.08);
+      border-radius:16px;
+      padding:12px;
+      background:rgba(12,14,20,.28);
+    }
+    .appearance-row{
+      display:grid;
+      grid-template-columns:minmax(118px,.58fr) 1fr;
+      align-items:center;
+      gap:12px;
+      padding:10px 0;
+    }
+    .appearance-row + .appearance-row{
+      border-top:1px solid rgba(236,232,222,.065);
+    }
+    .appearance-row-label{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+      color:var(--text);
+    }
+    .appearance-row-label > span{
+      width:24px;
+      height:24px;
+      border-radius:999px;
+      display:inline-grid;
+      place-items:center;
+      flex:0 0 auto;
+      color:var(--gold2);
+      background:rgba(201,162,74,.095);
+      border:1px solid rgba(201,162,74,.18);
+      font-size:11px;
+      box-shadow:0 0 16px rgba(201,162,74,.08);
+    }
+    .appearance-row-label strong{
+      display:block;
+      font-size:12px;
+      letter-spacing:.03em;
+      line-height:1.25;
+    }
+    .appearance-row-label small{
+      display:block;
+      margin-top:3px;
+      color:var(--muted);
+      font-size:10px;
+      line-height:1.35;
+      letter-spacing:0;
+    }
+    .swatch-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      justify-content:flex-start;
+    }
+    .swatchBtn{
+      width:30px!important;
+      height:30px!important;
+      min-width:30px;
+      border-radius:999px!important;
+      padding:0!important;
+    }
+    .appearance-custom{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      min-height:30px;
+      padding:2px 8px 2px 2px;
+      border:1px solid rgba(236,232,222,.11);
+      border-radius:999px;
+      background:rgba(12,14,20,.38);
+      color:var(--muted);
+      font-size:10.5px;
+      letter-spacing:.02em;
+      cursor:pointer;
+      transition:border-color .15s var(--ease-standard),background .15s var(--ease-standard);
+    }
+    .appearance-custom:hover{
+      border-color:rgba(201,162,74,.34);
+      background:rgba(201,162,74,.055);
+    }
+    .appearance-custom input[type="color"]{
+      appearance:none;
+      -webkit-appearance:none;
+      width:26px;
+      height:26px;
+      border:0;
+      padding:0;
+      background:transparent;
+      cursor:pointer;
+    }
+    .appearance-custom input[type="color"]::-webkit-color-swatch-wrapper{padding:0;}
+    .appearance-custom input[type="color"]::-webkit-color-swatch{border:2px solid rgba(255,255,255,.28);border-radius:999px;}
+    .appearance-custom input[type="color"]::-moz-color-swatch{border:2px solid rgba(255,255,255,.28);border-radius:999px;}
+    @media(max-width:620px){
+      .appearance-row{
+        grid-template-columns:1fr;
+        gap:8px;
+      }
+      .swatch-row{gap:8px;}
+      .swatchBtn{width:32px!important;height:32px!important;min-width:32px;}
+    }
+
+  
+
+    /* v1.0 finishing polish: 静かな演出・質感だけを追加 */
+    .detail{
+      padding:19px;
+      border-color:rgba(236,232,222,.125);
+      box-shadow:0 31px 94px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.072),inset 0 -1px 0 rgba(255,255,255,.026);
+    }
+    .detail-head{gap:12px;margin-bottom:1px}
+    .detail-actions{gap:8px}
+    .section{
+      margin-top:15px;
+      padding:13px;
+      border-color:rgba(236,232,222,.075);
+      background:rgba(12,14,19,.34);
+    }
+    .section.ai{
+      border-color:rgba(201,162,74,.18);
+      background:rgba(201,162,74,.04);
+    }
+    .markdown{line-height:1.94}
+    @media(max-width:620px){
+      .detail{padding:14px}
+      .section{margin-top:13px;padding:12px}
+    }
+
+  
+
+    /* v1.0 glass base polish: 左パネル背面の黒い土台を控えめなすりガラス表現へ */
+    .side{
+      position:relative;
+      overflow:hidden;
+      background:transparent!important;
+      border-right-color:rgba(236,232,222,.09)!important;
+      box-shadow:
+        inset -1px 0 0 rgba(255,255,255,.045),
+        18px 0 58px rgba(0,0,0,.18);
+    }
+    .side::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background:
+        linear-gradient(145deg,rgba(255,255,255,.118),rgba(255,255,255,.034) 34%,rgba(11,13,19,.46) 100%),
+        radial-gradient(circle at 18% 8%,rgba(216,196,138,.135),transparent 28%),
+        radial-gradient(circle at 92% 72%,rgba(138,180,255,.09),transparent 32%),
+        rgba(15,17,24,.46);
+      border-right:1px solid rgba(236,232,222,.085);
+      box-shadow:
+        inset 1px 0 0 rgba(255,255,255,.108),
+        inset -1px 0 0 rgba(255,255,255,.035),
+        inset 0 1px 0 rgba(255,255,255,.086);
+    }
+    .side::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      opacity:.36;
+      background:
+        linear-gradient(115deg,rgba(255,255,255,.075),transparent 24%,transparent 72%,rgba(201,162,74,.035)),
+        radial-gradient(circle at 52% -10%,rgba(255,255,255,.085),transparent 26%);
+      mix-blend-mode:screen;
+    }
+    .side-scroll{
+      position:relative;
+      z-index:1;
+      background:transparent!important;
+    }
+    @supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+      .side::before{
+        -webkit-backdrop-filter:blur(30px) saturate(1.28);
+        backdrop-filter:blur(30px) saturate(1.28);
+      }
+    }
+    @media(max-width:980px){
+      .side{
+        border-right:none!important;
+        border-bottom:1px solid rgba(236,232,222,.09)!important;
+        box-shadow:0 18px 58px rgba(0,0,0,.18),inset 0 -1px 0 rgba(255,255,255,.04);
+      }
+      .side::before{
+        border-right:0;
+        border-bottom:1px solid rgba(236,232,222,.08);
+      }
+    }
+
+  
+    /* v1.0 title font polish: 左パネル見出しをブランドタイトルと統一 */
+    .side .panel > .panel-head .panel-title{
+      font-family:'Shippori Mincho','Hiragino Mincho ProN',serif;
+      font-size:15.5px;
+      font-weight:700;
+      letter-spacing:.075em;
+      color:var(--gold2);
+      text-shadow:0 0 18px rgba(201,162,74,.16);
+    }
+
+
+    /* v1.0 mobile UX: iPhoneでは星図を主役にし、綴る/記憶を必要時だけ下部シートで開く */
+    .mobile-dock{display:none}
+    .desktop-compose-trigger,.desktop-compose-close,.desktop-compose-backdrop{display:none}
+    .compose-head-actions{display:flex;align-items:center;gap:8px}
+    @media(max-width:620px){
+      input,textarea,select{font-size:16px}
+      html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+      .app{height:100dvh;min-height:0;overflow:hidden}
+      header{
+        flex:0 0 auto;
+        height:auto;
+        min-height:calc(58px + env(safe-area-inset-top));
+        padding:calc(8px + env(safe-area-inset-top)) 10px 8px;
+        gap:8px;
+      }
+      .brand{flex:0 0 auto}
+      .brand h1{font-size:18px;line-height:1;white-space:nowrap}
+      .header-actions{
+        flex:1 1 auto;
+        justify-content:flex-end;
+        gap:4px;
+        min-width:0;
+      }
+      .header-actions button{
+        min-width:0;
+        min-height:34px;
+        padding:6px 7px;
+        font-size:10px;
+        line-height:1.2;
+      }
+      .workspace{display:block;position:relative;flex:1;min-height:0;overflow:hidden}
+      .graph-area{position:absolute;inset:0;height:auto;min-height:0;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+      .graph-toolbar{top:10px;left:10px;right:10px}
+      .toolbar-left{display:none}
+      .toolbar-right{margin-left:auto}
+
+      .side{
+        display:none;
+        position:fixed;
+        left:10px;
+        right:10px;
+        bottom:calc(76px + env(safe-area-inset-bottom));
+        z-index:32;
+        max-height:calc(100dvh - 142px);
+        border:0!important;
+        background:transparent!important;
+        box-shadow:none!important;
+      }
+      body.mobile-sheet-compose .side,
+      body.mobile-sheet-memory .side{display:block}
+      .side::before,.side::after{display:none!important}
+      .side-scroll{
+        padding:0!important;
+        gap:0!important;
+        max-height:none!important;
+        overflow:visible!important;
+      }
+      .side .panel{display:none!important;margin:0!important}
+      body.mobile-sheet-compose .side .panel:first-child,
+      body.mobile-sheet-memory .side .panel:nth-child(2){
+        display:flex!important;
+        flex-direction:column;
+        max-height:calc(100dvh - 142px)!important;
+        border-radius:24px;
+        overflow:hidden;
+        background:linear-gradient(180deg,rgba(32,35,44,.78),rgba(14,16,22,.68));
+        -webkit-backdrop-filter:blur(26px) saturate(1.25);
+        backdrop-filter:blur(26px) saturate(1.25);
+        box-shadow:0 24px 70px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(255,255,255,.035);
+      }
+      .side .panel-head{flex:0 0 auto;padding:13px 14px}
+      body.mobile-sheet-compose .side .panel:first-child .panel-body,
+      body.mobile-sheet-memory .side .panel:nth-child(2) .search-box{
+        flex:0 0 auto;
+      }
+      body.mobile-sheet-compose .side .panel:first-child .panel-body{
+        max-height:calc(100dvh - 202px)!important;
+        overflow-y:auto!important;
+        -webkit-overflow-scrolling:touch;
+        padding-bottom:14px!important;
+      }
+      body.mobile-sheet-memory .side .panel:nth-child(2) .list{
+        max-height:calc(100dvh - 332px)!important;
+        min-height:min(290px,calc(100dvh - 380px));
+        overflow-y:auto!important;
+        -webkit-overflow-scrolling:touch;
+        padding-bottom:18px;
+      }
+      body.mobile-sheet-memory .side .panel:nth-child(2) .list-pager{flex:0 0 auto}
+
+      /* Keep memory pagination clear of the fixed mobile dock. */
+      body.mobile-sheet-memory .side{
+        bottom:calc(94px + env(safe-area-inset-bottom));
+        max-height:calc(100dvh - 160px);
+      }
+      body.mobile-sheet-memory .side .panel:nth-child(2){
+        max-height:calc(100dvh - 160px)!important;
+      }
+      body.mobile-sheet-memory .side .panel:nth-child(2) .list{
+        flex:1 1 auto;
+        min-height:0;
+        max-height:none!important;
+        padding-bottom:12px!important;
+      }
+      body.mobile-sheet-memory .side .panel:nth-child(2) .list-pager{
+        position:relative;
+        z-index:2;
+        min-height:58px;
+        padding:9px 14px 13px;
+        background:rgba(20,22,29,.94);
+      }
+      body.mobile-sheet-memory .side .panel:nth-child(2) .pager-button{
+        min-width:48px;
+        min-height:42px;
+      }
+
+      .mobile-dock{
+        position:fixed;
+        left:12px;
+        right:12px;
+        bottom:calc(10px + env(safe-area-inset-bottom));
+        z-index:34;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        padding:8px;
+        border:1px solid rgba(236,232,222,.10);
+        border-radius:22px;
+        background:linear-gradient(180deg,rgba(30,33,42,.66),rgba(12,14,19,.58));
+        -webkit-backdrop-filter:blur(24px) saturate(1.22);
+        backdrop-filter:blur(24px) saturate(1.22);
+        box-shadow:0 18px 48px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08);
+      }
+      .mobile-dock button{
+        min-height:44px;
+        border-radius:16px;
+        font-size:13px;
+        letter-spacing:.04em;
+        background:rgba(16,18,24,.46);
+      }
+      .mobile-dock button.active{
+        border-color:rgba(201,162,74,.56);
+        color:#F2E7BF;
+        background:linear-gradient(180deg,rgba(201,162,74,.16),rgba(201,162,74,.07));
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 0 24px rgba(201,162,74,.08);
+      }
+      .detail{
+        left:10px;
+        right:10px;
+        bottom:calc(76px + env(safe-area-inset-bottom));
+        width:auto;
+        max-height:calc(100dvh - 142px);
+      }
+      body.mobile-sheet-compose .detail,
+      body.mobile-sheet-memory .detail{display:none}
+      .toast{bottom:calc(82px + env(safe-area-inset-bottom))}
+
+      /* Safari tab: keep compose/edit actions inside the visual viewport while the keyboard is open. */
+      body.mobile-keyboard-open .mobile-dock{display:none}
+      body.mobile-keyboard-open .side,
+      body.mobile-keyboard-open .detail{
+        bottom:calc(var(--mobile-keyboard-inset,0px) + 10px);
+        max-height:calc(var(--mobile-visual-height,100dvh) - 82px)!important;
+      }
+      body.mobile-keyboard-open.mobile-sheet-compose .side .panel:first-child{
+        max-height:calc(var(--mobile-visual-height,100dvh) - 82px)!important;
+      }
+      body.mobile-keyboard-open.mobile-sheet-compose .side .panel:first-child .panel-body{
+        max-height:calc(var(--mobile-visual-height,100dvh) - 142px)!important;
+        scroll-padding-bottom:18px;
+      }
+    }
+
+    /* iPhone: 記憶パネル全体を1つの縦スクロール領域として扱う。 */
+    @media(max-width:620px){
+      body.mobile-sheet-memory .side{
+        height:calc(100dvh - 160px);
+        min-height:0;
+        overflow:hidden;
+      }
+      body.mobile-sheet-memory .side-scroll{
+        height:100%;
+        min-height:0;
+        overflow:hidden!important;
+      }
+      body.mobile-sheet-memory #memoryPanel{
+        height:100%;
+        min-height:0;
+        max-height:none!important;
+        overflow-x:hidden!important;
+        overflow-y:auto!important;
+        -webkit-overflow-scrolling:touch;
+        overscroll-behavior-y:contain;
+        touch-action:pan-y;
+        scroll-padding-bottom:calc(74px + env(safe-area-inset-bottom));
+      }
+      body.mobile-sheet-memory #memoryPanel .panel-head{
+        position:sticky;
+        top:0;
+        z-index:4;
+        background:rgba(27,29,36,.97);
+        -webkit-backdrop-filter:blur(18px);
+        backdrop-filter:blur(18px);
+      }
+      body.mobile-sheet-memory #memoryPanel .search-box,
+      body.mobile-sheet-memory #memoryPanel .list{
+        flex:0 0 auto;
+      }
+      body.mobile-sheet-memory #memoryPanel .list{
+        min-height:0!important;
+        max-height:none!important;
+        overflow:visible!important;
+        -webkit-overflow-scrolling:auto;
+        touch-action:pan-y;
+      }
+      body.mobile-sheet-memory #memoryPanel .list-pager{
+        position:sticky;
+        bottom:0;
+        padding-bottom:calc(13px + env(safe-area-inset-bottom));
+      }
+    }
+
+    /* PC UX: 綴る画面は必要なときだけ中央に開き、記憶の一覧を左に残す */
+    @media(min-width:981px){
+      .workspace{grid-template-columns:340px minmax(0,1fr)!important}
+      .desktop-compose-trigger{display:inline-flex}
+      .desktop-compose-close{display:inline-flex}
+      .side-scroll > #composerPanel{display:none!important}
+      #memoryPanel{display:flex;flex:1;min-height:0;flex-direction:column}
+      #memoryPanel #noteList{
+        flex:1 1 auto;
+        min-height:0!important;
+        max-height:none!important;
+        overflow-y:auto!important;
+        padding-bottom:16px!important;
+        scroll-padding-bottom:16px;
+      }
+      #memoryPanel .list-pager{
+        position:relative;
+        z-index:2;
+        flex:0 0 auto;
+        min-height:52px;
+        padding:8px 13px 11px;
+        background:rgba(20,22,29,.96);
+        box-shadow:0 -8px 18px rgba(10,11,16,.28);
+      }
+      #memoryPanel .pager-button{min-width:44px;min-height:36px}
+      .desktop-compose-backdrop{
+        position:fixed;
+        inset:0;
+        z-index:60;
+        background:rgba(7,8,12,.68);
+        -webkit-backdrop-filter:blur(8px);
+        backdrop-filter:blur(8px);
+      }
+      body.desktop-compose-open .desktop-compose-backdrop{display:block}
+      body.desktop-compose-open > #composerPanel{
+        position:fixed;
+        top:50%;
+        left:50%;
+        z-index:61;
+        display:flex!important;
+        flex-direction:column;
+        width:min(760px,calc(100vw - 64px));
+        max-height:calc(100vh - 64px)!important;
+        margin:0;
+        transform:translate(-50%,-50%);
+        overflow:hidden;
+        border-color:rgba(216,196,138,.28);
+        border-radius:24px;
+        background:linear-gradient(160deg,rgba(36,39,48,.98),rgba(17,19,26,.98));
+        box-shadow:0 34px 100px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.10);
+      }
+      body > #composerPanel .panel-head{flex:0 0 auto;padding:15px 18px}
+      body > #composerPanel .panel-title{
+        font-family:'Shippori Mincho','Hiragino Mincho ProN',serif;
+        font-size:16px;
+        font-weight:700;
+        letter-spacing:.075em;
+        color:var(--gold2);
+      }
+      body > #composerPanel .panel-body{
+        gap:14px;
+        padding:18px;
+        overflow-y:auto;
+        overscroll-behavior:contain;
+      }
+      body > #composerPanel .row{grid-template-columns:minmax(0,1fr) 180px}
+      body > #composerPanel #bodyInput{min-height:180px}
+    }
+
+    .highlight-tools{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:7px}
+    .highlight-button{border-color:rgba(216,196,138,.38);background:linear-gradient(180deg,rgba(216,196,138,.16),rgba(201,162,74,.08));color:#E9D89F}
+    .highlight-button::before{content:"";width:13px;height:6px;border-radius:2px;background:rgba(240,211,109,.82);box-shadow:0 0 10px rgba(240,211,109,.25)}
+    .highlight-action-row{margin-top:7px;flex-wrap:nowrap}
+    .edit-inline-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+    .markdown mark.text-highlight{color:inherit;background:linear-gradient(180deg,transparent 10%,rgba(240,211,109,.28) 10%,rgba(240,211,109,.34) 88%,transparent 88%);padding:.05em .18em;border-radius:.28em;box-decoration-break:clone;-webkit-box-decoration-break:clone;text-shadow:0 0 12px rgba(240,211,109,.08)}
+    @media(max-width:620px){.highlight-tools{align-items:flex-start}.highlight-button{min-height:38px}.highlight-tools .hint{flex:1;min-width:160px}.highlight-action-row{align-items:center}.edit-inline-actions{gap:6px}.edit-inline-actions button{padding-left:9px;padding-right:9px}}
+    .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+    .graph-access{margin-top:8px;border:1px solid rgba(236,232,222,.08);border-radius:12px;background:rgba(12,14,19,.34)}
+    .graph-access summary{cursor:pointer;padding:8px 10px;color:var(--sub);font-size:11px;font-weight:700}
+    .graph-access-list{display:flex;flex-direction:column;gap:8px;padding:0 9px 9px}
+    .graph-access-group{display:flex;flex-wrap:wrap;gap:6px}
+    .graph-access-label{width:100%;color:var(--muted);font-size:10px}
+    .graph-access-list button{white-space:normal;text-align:left;font-size:11px;padding:6px 8px}
+    .color-warning{color:#F0C0CF}
+    button.type-chip{display:block;width:100%}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand"><h1 class="font-display">星図帖</h1><span class="version font-mono">Version 1.0</span></div>
+      <div class="header-actions">
+        <button class="primary desktop-compose-trigger" id="desktopComposeBtn" type="button">＋ 綴る</button>
+        <button class="ghost" id="helpBtn">使い方</button>
+        <button class="ghost" id="exportBtn">書き出し</button>
+        <button class="ghost" id="importBtn">読み込み</button>
+        <input type="file" id="importFile" class="file-input" accept="application/json,.json" />
+        <button class="ghost" id="clearBtn">すべて削除</button>
+      </div>
+    </header>
+    <main class="workspace">
+      <aside class="side">
+        <div class="side-scroll">
+          <section class="panel" id="composerPanel">
+            <div class="panel-head"><div class="panel-title" id="composerPanelTitle">星片を綴る</div><div class="compose-head-actions"><span class="stat" id="noteCount">0 星片</span><button class="ghost desktop-compose-close" id="desktopComposeCloseBtn" type="button">閉じる</button></div></div>
+            <div class="panel-body">
+              <div class="row">
+                <div><label for="titleInput">タイトル</label><input id="titleInput" placeholder="例：異邦人の違和感" autocomplete="off" /></div>
+                <div><label for="typeInput">種類</label><select id="typeInput"></select></div>
+              </div>
+              <div><label>種類を選ぶ</label><div class="type-grid" id="typeGrid"></div></div>
+              <div><label for="tagsInput">タグ</label><input id="tagsInput" placeholder="例：読書、カミュ、問い" autocomplete="off" /></div>
+              <div><label for="bodyInput">本文</label><textarea id="bodyInput" placeholder="今日思ったこと、読書で引っかかった問い、仕事の気づきなどを書く…\n\n#読書 のように書いてもタグになります。Enterは改行です。"></textarea><div class="highlight-tools"><button class="highlight-button" id="highlightBodyBtn" type="button">蛍光ペン</button><span class="hint">重要な文章を選択して押します。もう一度押すと解除できます。</span></div></div>
+              <details>
+                <summary class="hint">画像を添付する</summary>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
+                  <div class="composer-actions">
+                    <button id="imageBtn" type="button">画像を選ぶ</button>
+                    <input type="file" id="imageInput" class="file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" />
+                    <button id="removeImageBtn" type="button" class="ghost">画像を外す</button>
+                  </div>
+                  <div class="image-preview" id="imagePreview"><img id="imagePreviewImg" alt="添付画像プレビュー" /><span class="hint">この画像はブラウザ内に保存されます。</span></div>
+                </div>
+              </details>
+              <div class="composer-actions"><div class="hint">必須：タイトル / 本文 / 種類。保存はブラウザ内です。</div><button class="primary" id="addBtn">綴る</button></div>
+            </div>
+          </section>
+
+          <section class="panel" id="memoryPanel">
+            <div class="panel-head"><div class="panel-title">星片の記憶</div><span class="stat" id="filteredCount">0件表示</span></div>
+            <div class="search-box">
+              <input id="searchInput" placeholder="星片を呼び戻す… タイトル・本文・タグ" />
+              <div class="mini-row"><select id="filterType"></select><button id="clearSearchBtn" class="ghost">検索解除</button></div>
+              <div class="stats" id="stats"></div>
+              <details class="graph-access"><summary>星図を一覧で操作</summary><div class="graph-access-list" id="graphAccessList"></div></details>
+            </div>
+            <div class="list" id="noteList"></div>
+            <div class="list-pager" id="listPager" hidden>
+              <button class="pager-button ghost" id="prevPageBtn" type="button" aria-label="前の星片ページ">‹</button>
+              <div class="pager-status" id="pageStatus">1 / 1</div>
+              <button class="pager-button ghost" id="nextPageBtn" type="button" aria-label="次の星片ページ">›</button>
+            </div>
+          </section>
+        </div>
+      </aside>
+
+      <section class="graph-area" id="graphArea">
+        <div class="graph-toolbar">
+          <div class="toolbar-left"><span class="pill">タグ星</span><span class="pill">星片</span><span class="pill">手動リンク</span></div>
+          <div class="toolbar-right"><select class="graph-tag-filter" id="graphTagFilter" aria-label="星図をタグで絞り込む"><option value="">すべて表示</option></select><button class="zoom-button" id="zoomOutBtn" aria-label="縮小">−</button><span class="zoom-value" id="zoomLevel">100%</span><button class="zoom-button" id="zoomInBtn" aria-label="拡大">＋</button><button id="resetViewBtn">表示リセット</button><button id="shakeBtn">再配置</button></div>
+        </div>
+        <p class="sr-only" id="graphDescription">星片とタグのつながりを表す星図です。マウスまたはタッチで星を選択・移動でき、下の代替一覧からも同じ内容へアクセスできます。</p>
+        <canvas id="canvas" role="img" aria-label="星片とタグのつながりを表す星図" aria-describedby="graphDescription" tabindex="0"></canvas>
+        <div class="graph-empty" id="graphEmpty" aria-hidden="true"><div class="graph-empty-star">✦</div><div class="graph-empty-text">最初の星片を綴りましょう。</div></div>
+        <div class="detail" id="detail" role="region" aria-label="星図の詳細" tabindex="-1" hidden></div>
+      </section>
+    </main>
+    <nav class="mobile-dock" aria-label="モバイル操作">
+      <button id="mobileComposeBtn" type="button">星片を綴る</button>
+      <button id="mobileMemoryBtn" type="button">星片の記憶</button>
+    </nav>
+  </div>
+
+  <div class="desktop-compose-backdrop" id="desktopComposeBackdrop" aria-hidden="true"></div>
+
+  <div class="modal-bg" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="helpModalTitle">星図帖 Version 1.0 の使い方</h2><p>星図帖は、記録を「星片」として残し、タグと手動リンクで知識の星図を育てるローカルメモ帳です。</p><ul><li>星片には「タイトル・本文・種類」を必ず設定します。</li><li><code>#読書</code> のように書くとタグとして読み取られます。</li><li>同じタグを持つ星片は、大きなタグ星につながります。</li><li>タグ星・星片はドラッグして好きな場所へ移動でき、位置はこの端末に保存されます。</li><li>「再配置」を押すと、保存した位置を解除して自動配置に戻せます。</li><li>詳細画面の「つなげる」から、星片同士を手動で結べます。</li><li>検索はタイトル、本文、タグ、種類に対応しています。</li><li>Markdown風の見出し、太字、箇条書き、コード表示に対応しています。</li><li>画像は端末内で縮小・圧縮してから保存し、外部へ送信しません。</li><li>保存はブラウザの localStorage です。定期的に「書き出し」でバックアップしてください。</li><li>外部AI APIは使っていないため、料金はかかりません。</li></ul><button class="primary" id="closeHelpBtn">閉じる</button></div></div>
+  <div class="modal-bg" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="confirmModalTitle">すべて削除しますか？</h2><p>この操作は取り消せません。必要なら先に「書き出し」でバックアップしてください。</p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button id="cancelClearBtn">キャンセル</button><button class="danger" id="doClearBtn">削除する</button></div></div></div>
+  <div class="modal-bg" id="deleteNoteModal" role="dialog" aria-modal="true" aria-labelledby="deleteNoteModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="deleteNoteModalTitle">この星片を削除しますか？</h2><p id="deleteNoteText">この操作は取り消せません。</p><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;"><button id="cancelDeleteNoteBtn">キャンセル</button><button class="danger" id="confirmDeleteNoteBtn">削除する</button></div></div></div>
+  <div class="modal-bg" id="copyTextModal" role="dialog" aria-modal="true" aria-labelledby="copyTextModalTitle"><div class="modal" tabindex="-1"><h2 class="font-display" id="copyTextModalTitle">コピー用テキスト</h2><p class="hint">自動コピーがブロックされた場合は、下の文章を手動でコピーしてください。</p><textarea class="copy-textarea" id="copyTextArea"></textarea><div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap;"><button id="selectCopyTextBtn">コピーを試す</button><button id="shareCopyTextBtn">共有する</button><button id="downloadCopyTextBtn">TXT保存</button><button id="closeCopyTextBtn">閉じる</button></div></div></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+(() => {
+  const STORAGE_KEY = "hoshizucho-v1-notes";
+  const TAG_STYLE_KEY = "hoshizucho-v1-tag-styles";
+  const NODE_LAYOUT_KEY = "hoshizucho-v1-node-layouts";
+  const LEGACY_KEYS = ["hoshizucho-notes-url-color-v2", "hoshizucho-notes-url-color-v1", "hoshizucho-notes-local-v1"];
+  const COLOR = { bg:"#111218", panel:"#1B1D24", text:"#ECE8DE", sub:"#9A9DAA", gold:"#C9A24A", gold2:"#D8C48A", edge:"#444957", manual:"#8AB4FF", danger:"#C1666B" };
+  const TYPES = [
+    { key:"book", label:"読書", icon:"📚", color:"#D8C48A", words:["読書","本","小説","カミュ","異邦人","スローターハウス","ラヴクラフト","狂気の山脈"] },
+    { key:"idea", label:"アイデア", icon:"💡", color:"#F0D36D", words:["アイデア","作りたい","企画","発想","思いついた"] },
+    { key:"memo", label:"メモ", icon:"📝", color:"#ECE8DE", words:["メモ","記録","日記","今日"] },
+    { key:"work", label:"仕事", icon:"💼", color:"#8AB4FF", words:["仕事","取材","原稿","校正","メール","電話","発送"] },
+    { key:"content", label:"コンテンツ", icon:"🎞️", color:"#B8A7FF", words:["映画","動画","アニメ","ゲーム","音楽","コンテンツ"] },
+    { key:"life", label:"ライフ", icon:"🌱", color:"#9FC9A8", words:["生活","習慣","筋トレ","睡眠","予定","振り返り","英語"] }
+  ];
+  const TYPE_MAP = Object.fromEntries(TYPES.map(t => [t.key, t]));
+  const BG_STARS = createBackgroundStars(110);
+  const STAR_COLORS = [["金","#D8C48A"],["青","#8AB4FF"],["緑","#9FC9A8"],["桃","#E6A0B7"],["紫","#B8A7FF"],["橙","#E8A35B"],["白","#ECE8DE"],["赤","#D36A6A"]];
+  const TEXT_COLORS = [["生成り","#ECE8DE"],["淡金","#D8C48A"],["水色","#BFD7FF"],["若草","#BFE3C5"],["薄桃","#F0C0CF"],["藤色","#D0C8FF"],["灰白","#C9CBD3"],["白","#FFFFFF"]];
+  const TAG_STAR_COLORS = STAR_COLORS.slice(0,5);
+  const TAG_TEXT_COLORS = TEXT_COLORS.slice(0,5);
+  const MAX_IMAGE_SOURCE_BYTES = 24 * 1024 * 1024;
+  const MAX_IMAGE_STORED_BYTES = 750 * 1024;
+  const MAX_IMAGE_EDGE = 1600;
+  const MAX_IMPORT_BYTES = 30 * 1024 * 1024;
+  const HEX_COLOR = /^#[0-9a-f]{6}$/i;
+  const SAFE_IMAGE_TYPES = new Set(["image/jpeg","image/png","image/webp","image/gif","image/heic","image/heif"]);
+
+  const $ = (id) => document.getElementById(id);
+  let storageWriteBlocked = false;
+  let storageLoadFailed = false;
+  let notes = loadNotes();
+  let tagStyles = loadTagStyles();
+  let nodeLayouts = loadNodeLayouts();
+  let selectedId = null;
+  let focusedNodeId = null;
+  let activeGraphTag = "";
+  let hoveredNodeId = null;
+  const hoverMix = {};
+  const starTraits = {};
+  let selectedType = "memo";
+  let attachedImage = "";
+  let physics = {};
+  let draggingId = null;
+  let downPos = null;
+  let panning = false;
+  let panStart = null;
+  let pinchStart = null;
+  let dragStarted = false;
+  let dragOrigin = null;
+  let pointerIsTouch = false;
+  let pendingDeleteId = null;
+  let currentCopyText = "";
+  const LIST_PAGE_SIZE = 4;
+  let listPage = 0;
+  const VIEW_MIN = 0.35, VIEW_MAX = 2.7;
+  let view = { scale:1, x:0, y:0 };
+  let size = { w:800, h:520 };
+  let startedAt = performance.now();
+  let graphCache = null;
+  let graphDirty = true;
+  let graphLabelLayout = new Map();
+  let graphLabelLayoutAt = 0;
+  let lastFrameTime = 0;
+  let physicsAwake = true;
+  let settledFrames = 0;
+  let canvasFrameId = 0;
+  let idleTwinkleTimer = 0;
+  let activeModalId = null;
+  let modalReturnFocus = null;
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const canvas = $("canvas");
+  const ctx = canvas.getContext("2d");
+  const graphArea = $("graphArea");
+
+  function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-5); }
+  function nowText(){ const d=new Date(), p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+  function cleanTag(t){ return String(t||"").trim().replace(/^#/g,"").replace(/[、。,.!?！？]+$/g,""); }
+  function escapeHtml(str){ return String(str ?? "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s])); }
+  function truncate(s,n){ const v=String(s||""); return v.length>n ? v.slice(0,n)+"…" : v; }
+  function typeInfo(key){ return TYPE_MAP[key] || TYPE_MAP.memo; }
+  function isUsefulKeyword(w){ return !(/^[0-9]+$/.test(w) || /^[ぁ-ん]{2,4}$/.test(w)); }
+
+  function normalizeNote(n){
+    const aiSummary = n.aiSummary || "";
+    const raw = n.raw || n.body || n.content || "";
+    const tags = Array.isArray(n.tags) ? n.tags.map(cleanTag).filter(Boolean) : [];
+    const type = TYPES.some(t => t.key === n.type) ? n.type : inferType(raw + " " + tags.join(" "));
+    const id = n.id || uid();
+    return {
+      id,
+      title: n.title || makeTitle(raw, []),
+      type,
+      body: raw,
+      raw,
+      content: n.content || makeContent(raw),
+      tags,
+      aiSummary,
+      keywords: aiSummary ? extractKeywordsFromSummary(aiSummary) : (Array.isArray(n.keywords) ? n.keywords.slice(0,8) : []),
+      imageData: n.imageData || n.image || "",
+      links: Array.isArray(n.links) ? [...new Set(n.links.filter(x => x && x !== id))] : [],
+      starColor: n.starColor || typeInfo(type).color,
+      textColor: n.textColor || COLOR.text,
+      createdAt: n.createdAt || new Date().toISOString(),
+      createdLabel: n.createdLabel || nowText(),
+      updatedAt: n.updatedAt || n.createdAt || new Date().toISOString()
+    };
+  }
+
+  function loadNotes(){
+    try{
+      let raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw){ for(const key of LEGACY_KEYS){ raw = localStorage.getItem(key); if(raw) break; } }
+      if(!raw) return [];
+      const data = JSON.parse(raw);
+      const incoming = Array.isArray(data) ? data : data.notes;
+      if(!Array.isArray(incoming)) throw new Error("Invalid saved data");
+      return incoming.map(normalizeNote);
+    }catch(e){
+      storageWriteBlocked = true;
+      storageLoadFailed = true;
+      return [];
+    }
+  }
+  function loadTagStyles(){
+    try{
+      const data = JSON.parse(localStorage.getItem(TAG_STYLE_KEY) || "{}");
+      return data && typeof data === "object" && !Array.isArray(data) ? data : {};
+    }catch{ storageWriteBlocked=true; storageLoadFailed=true; return {}; }
+  }
+  function loadNodeLayouts(){
+    try{
+      const data = JSON.parse(localStorage.getItem(NODE_LAYOUT_KEY) || "{}");
+      if(!data || typeof data !== "object" || Array.isArray(data)) return {};
+      return Object.fromEntries(Object.entries(data).filter(([,p])=>p && Number.isFinite(p.x) && Number.isFinite(p.y)).map(([id,p])=>[id,{x:clamp(p.x,.02,.98),y:clamp(p.y,.02,.98)}]));
+    }catch{ storageWriteBlocked=true; storageLoadFailed=true; return {}; }
+  }
+  function isPlainObject(value){ return !!value && typeof value === "object" && !Array.isArray(value); }
+  function validateImportNote(note,index){
+    if(!isPlainObject(note)) throw new Error(`星片${index+1}の形式が正しくありません。`);
+    const textFields=["id","title","type","body","raw","content","aiSummary","imageData","image","starColor","textColor","createdAt","createdLabel","updatedAt"];
+    for(const key of textFields) if(note[key] != null && typeof note[key] !== "string") throw new Error(`星片${index+1}の「${key}」が文字列ではありません。`);
+    if((note.id||"").length>160 || (note.title||"").length>500 || (note.body||note.raw||"").length>500000) throw new Error(`星片${index+1}の文字数が上限を超えています。`);
+    const image=note.imageData||note.image||"";
+    if(image && (!image.startsWith("data:image/") || image.length>16*1024*1024)) throw new Error(`星片${index+1}の画像データが大きすぎるか不正です。`);
+    for(const key of ["tags","keywords","links"]) if(note[key] != null && (!Array.isArray(note[key]) || note[key].length>2000 || note[key].some(v=>typeof v!=="string"))) throw new Error(`星片${index+1}の「${key}」が不正です。`);
+    for(const key of ["starColor","textColor"]) if(note[key] && !HEX_COLOR.test(note[key])) throw new Error(`星片${index+1}の色指定が不正です。`);
+  }
+  function validateTagStyles(value){
+    if(value == null) return {};
+    if(!isPlainObject(value) || Object.keys(value).length>2000) throw new Error("タグの見た目データが不正です。");
+    const clean=Object.create(null);
+    for(const [key,style] of Object.entries(value)){
+      if(key.length>200 || !isPlainObject(style)) throw new Error("タグの見た目データが不正です。");
+      const next={};
+      for(const field of ["starColor","textColor"]) if(style[field]!=null){ if(typeof style[field]!=="string" || !HEX_COLOR.test(style[field])) throw new Error("タグの色指定が不正です。"); next[field]=style[field]; }
+      clean[key]=next;
+    }
+    return clean;
+  }
+  function validateNodeLayouts(value){
+    if(value == null) return {};
+    if(!isPlainObject(value) || Object.keys(value).length>10000) throw new Error("星の配置データが不正です。");
+    const clean=Object.create(null);
+    for(const [id,p] of Object.entries(value)){
+      if(id.length>240 || !isPlainObject(p) || !Number.isFinite(p.x) || !Number.isFinite(p.y)) throw new Error("星の配置データが不正です。");
+      clean[id]={x:clamp(p.x,.02,.98),y:clamp(p.y,.02,.98)};
+    }
+    return clean;
+  }
+  function restoreStorageValue(key,value){ if(value==null) localStorage.removeItem(key); else localStorage.setItem(key,value); }
+  function commitImportedData(nextNotes,nextStyles,nextLayouts){
+    if(storageWriteBlocked) throw new Error("保存データの読み込みに問題があるため、上書きを中止しました。");
+    const before={notes:localStorage.getItem(STORAGE_KEY),styles:localStorage.getItem(TAG_STYLE_KEY),layouts:localStorage.getItem(NODE_LAYOUT_KEY)};
+    try{
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(nextNotes));
+      localStorage.setItem(TAG_STYLE_KEY,JSON.stringify(nextStyles));
+      localStorage.setItem(NODE_LAYOUT_KEY,JSON.stringify(nextLayouts));
+    }catch(error){
+      try{ restoreStorageValue(STORAGE_KEY,before.notes); restoreStorageValue(TAG_STYLE_KEY,before.styles); restoreStorageValue(NODE_LAYOUT_KEY,before.layouts); }catch{}
+      throw new Error("保存容量が不足しているため、読み込みを中止しました。既存データは変更していません。");
+    }
+    notes=nextNotes; tagStyles=nextStyles; nodeLayouts=nextLayouts; invalidateGraph();
+  }
+  function saveNodeLayouts(nextLayouts=nodeLayouts, silent=false){
+    if(storageWriteBlocked){ if(!silent) toast("保存データの読み込みに問題があるため、星の配置を上書きしませんでした。"); return false; }
+    try{
+      localStorage.setItem(NODE_LAYOUT_KEY, JSON.stringify(nextLayouts));
+      nodeLayouts = nextLayouts;
+      return true;
+    }catch(error){
+      if(!silent) toast(error?.name==="QuotaExceededError" ? "保存容量が不足しているため、星の位置を保存できませんでした。" : "星の位置を保存できませんでした。");
+      return false;
+    }
+  }
+  function pinNodePosition(id){
+    const p=physics[id], node=buildGraph().nodes.find(n=>n.id===id); if(!p || !node) return false;
+    const margin=node.type === "tag" ? 68 : 42;
+    p.x=clamp(p.x,margin,Math.max(margin,size.w-margin));
+    p.y=clamp(p.y,56,Math.max(56,size.h-56));
+    p.vx=0; p.vy=0; p.pinned=true;
+    graphLabelLayout=new Map(); graphLabelLayoutAt=0;
+    return saveNodeLayouts({...nodeLayouts,[id]:{x:p.x/Math.max(size.w,1),y:p.y/Math.max(size.h,1)}});
+  }
+  function removeNodeLayout(id, silent=true){
+    if(!nodeLayouts[id]) return;
+    const next={...nodeLayouts}; delete next[id]; saveNodeLayouts(next,silent);
+  }
+  function moveNodeLayout(oldId,newId){
+    if(oldId===newId || !nodeLayouts[oldId]) return;
+    const next={...nodeLayouts,[newId]:nodeLayouts[oldId]}; delete next[oldId]; saveNodeLayouts(next,true);
+  }
+  function clearNodeLayouts(){
+    if(!saveNodeLayouts({},true)) return false;
+    return true;
+  }
+  function invalidateGraph(){ graphDirty = true; graphCache = null; graphLabelLayout = new Map(); graphLabelLayoutAt = 0; }
+  function saveNotes(nextNotes=notes){
+    if(storageWriteBlocked){
+      toast("保存データを読み込めなかったため、上書きを中止しました。");
+      return false;
+    }
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextNotes));
+      notes = nextNotes;
+      invalidateGraph();
+      return true;
+    }catch(e){
+      toast(e?.name==="QuotaExceededError" ? "保存容量が不足しています。入力内容は画面に残しています。画像を外すか、JSONバックアップ後に整理してください。" : "保存に失敗しました。入力・変更内容は画面に保持しています。");
+      return false;
+    }
+  }
+  function saveTagStyles(nextStyles=tagStyles){
+    if(storageWriteBlocked){ toast("保存データの読み込みに問題があるため、タグの見た目を上書きしませんでした。"); return false; }
+    try{
+      localStorage.setItem(TAG_STYLE_KEY, JSON.stringify(nextStyles));
+      tagStyles = nextStyles;
+      invalidateGraph();
+      return true;
+    }catch(e){
+      toast(e?.name==="QuotaExceededError" ? "保存容量が不足しているため、タグ星の見た目を保存できませんでした。" : "タグ星の見た目を保存できませんでした。");
+      return false;
+    }
+  }
+
+  function inferType(text){
+    const lower = String(text||"").toLowerCase();
+    let best = { key:"memo", score:0 };
+    for(const t of TYPES){
+      const score = t.words.reduce((sum,w)=>sum + (lower.includes(String(w).toLowerCase()) ? 1 : 0), 0);
+      if(score > best.score) best = { key:t.key, score };
+    }
+    return best.key;
+  }
+  function extractTagsFromText(text){
+    const set = new Set();
+    (String(text||"").match(/#[\p{L}\p{N}_\-ぁ-んァ-ン一-龥]+/gu) || []).forEach(t => set.add(cleanTag(t)));
+    return [...set];
+  }
+  function parseList(value, limit=10){
+    const parts = String(value||"").split(/[、,\n]+/).map(s=>cleanTag(s)).filter(Boolean);
+    return [...new Set(parts)].slice(0, limit);
+  }
+  function extractKeywordsFromSummary(summary){
+    const text = String(summary||"").trim();
+    if(!text) return [];
+    const set = new Set();
+    const stop = new Set(["要点","重要","気づき","補足","提案","行動","自分","こと","もの","ため","よう","理解","記録","今回","今後","文章","要約","内容","部分","場面","考え","感じ"]);
+    const add = (raw, allow=false) => {
+      const w = String(raw||"").trim().replace(/^[#・\-\s]+|[、。,.!?！？\s]+$/g, "");
+      if(w.length < 2 || w.length > 14 || stop.has(w) || !isUsefulKeyword(w)) return;
+      if(/[。！？!?]/.test(w)) return;
+      if(!allow && /[がをにへでとはものやか]/.test(w)) return;
+      set.add(w);
+    };
+    let m;
+    const bracketed = /\[\[([^\]]+)\]\]/g;
+    while((m = bracketed.exec(text)) !== null) add(m[1], true);
+    const titles = /『([^』]{2,18})』/g;
+    while((m = titles.exec(text)) !== null) add(m[1], true);
+    const quoted = /「([^」]{2,16})」/g;
+    while((m = quoted.exec(text)) !== null) add(m[1]);
+    const candidates = text.replace(/\[\[([^\]]+)\]\]/g,"$1").match(/[一-龥々]{1,6}[ァ-ヶー]{2,8}|[ァ-ヶー]{2,10}[一-龥々]{0,6}|[一-龥々]{2,8}|[A-Za-z][A-Za-z0-9_-]{1,13}/g) || [];
+    for(const word of candidates){ add(word); if(set.size >= 8) break; }
+    return [...set].slice(0,8);
+  }
+  function makeTitle(text, keywords){
+    const first = String(text||"").split(/\n/).map(s=>s.trim()).find(Boolean) || "無題";
+    const cleaned = first.replace(/#[\p{L}\p{N}_\-ぁ-んァ-ン一-龥]+/gu,"").replace(/\[\[([^\]]+)\]\]/g,"$1").replace(/[「」『』]/g,"").trim();
+    if(keywords && keywords.length && cleaned.length > 24) return keywords[0].slice(0,16);
+    return cleaned ? truncate(cleaned,18) : (keywords?.[0] || "無題");
+  }
+  function makeContent(text){
+    const cleaned = String(text||"").replace(/#[\p{L}\p{N}_\-ぁ-んァ-ン一-龥]+/gu,"").replace(/\[\[([^\]]+)\]\]/g,"$1").replace(/==(.+?)==/g,"$1").replace(/\n{3,}/g,"\n\n").trim();
+    const sentences = cleaned.split(/(?<=[。！？!?])\s*/).filter(Boolean);
+    return sentences.length >= 2 ? sentences.slice(0,3).join("") : truncate(cleaned,190);
+  }
+
+  function setupTypes(){
+    const typeInput = $("typeInput");
+    typeInput.innerHTML = TYPES.map(t => `<option value="${t.key}">${t.icon} ${t.label}</option>`).join("");
+    typeInput.value = selectedType;
+    typeInput.onchange = () => { selectedType = typeInput.value; renderTypeGrid(); };
+    renderTypeGrid();
+    const filter = $("filterType");
+    filter.innerHTML = `<option value="all">すべての種類</option>` + TYPES.map(t => `<option value="${t.key}">${t.icon} ${t.label}</option>`).join("");
+  }
+  function renderTypeGrid(){
+    $("typeGrid").innerHTML = TYPES.map(t => `<button type="button" class="type-chip ${selectedType===t.key ? "active" : ""}" data-type="${t.key}" aria-pressed="${selectedType===t.key}">${t.icon}<br>${t.label}</button>`).join("");
+    $("typeGrid").querySelectorAll(".type-chip").forEach(el => el.onclick = () => { selectedType = el.dataset.type; $("typeInput").value = selectedType; renderTypeGrid(); });
+  }
+
+
+
+  function isMobileUX(){
+    return window.matchMedia && window.matchMedia("(max-width: 620px)").matches;
+  }
+  function isStandaloneMode(){
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+  }
+  function isTextEntry(el){
+    if(el instanceof HTMLTextAreaElement) return true;
+    if(!(el instanceof HTMLInputElement)) return false;
+    return !["button","checkbox","color","file","hidden","radio","range","reset","submit"].includes(el.type);
+  }
+  function clearMobileKeyboardViewport(){
+    document.body.classList.remove("mobile-keyboard-open");
+    document.documentElement.style.removeProperty("--mobile-visual-height");
+    document.documentElement.style.removeProperty("--mobile-keyboard-inset");
+  }
+  function syncMobileKeyboardViewport(){
+    const vv=window.visualViewport, active=document.activeElement;
+    if(!vv || !isMobileUX() || !isTextEntry(active)){
+      clearMobileKeyboardViewport();
+      return;
+    }
+    const inMobileSurface=active.closest(".side,.detail,.modal");
+    if(!inMobileSurface){ clearMobileKeyboardViewport(); return; }
+    const visualHeight=Math.max(240,vv.height);
+    const keyboardInset=Math.max(0,window.innerHeight-vv.height-vv.offsetTop);
+    document.documentElement.style.setProperty("--mobile-visual-height",`${visualHeight}px`);
+    document.documentElement.style.setProperty("--mobile-keyboard-inset",`${keyboardInset}px`);
+    document.body.classList.add("mobile-keyboard-open");
+  }
+  function scheduleMobileKeyboardViewport(){
+    syncMobileKeyboardViewport();
+    [80,280,520].forEach(delay=>setTimeout(syncMobileKeyboardViewport,delay));
+  }
+  function setMobileSheet(kind){
+    const wasComposeOpen=document.body.classList.contains("mobile-sheet-compose");
+    document.body.classList.toggle("mobile-sheet-compose", kind === "compose");
+    document.body.classList.toggle("mobile-sheet-memory", kind === "memory");
+    const composeBtn = $("mobileComposeBtn"), memoryBtn = $("mobileMemoryBtn");
+    if(composeBtn){
+      composeBtn.classList.toggle("active", kind === "compose");
+      composeBtn.setAttribute("aria-pressed", kind === "compose" ? "true" : "false");
+    }
+    if(memoryBtn){
+      memoryBtn.classList.toggle("active", kind === "memory");
+      memoryBtn.setAttribute("aria-pressed", kind === "memory" ? "true" : "false");
+    }
+    if(kind === "compose") pauseCanvasForComposer();
+    else if(wasComposeOpen) resumeCanvasAfterComposer();
+  }
+  function closeMobileSheet(){
+    if(isMobileUX()) setMobileSheet(null);
+    clearMobileKeyboardViewport();
+  }
+
+  function isDesktopComposerUX(){
+    return window.matchMedia && window.matchMedia("(min-width: 981px)").matches;
+  }
+  function openDesktopComposer(){
+    if(!isDesktopComposerUX()) return;
+    const panel=$("composerPanel");
+    if(panel.parentElement !== document.body) document.body.appendChild(panel);
+    panel.setAttribute("role","dialog");
+    panel.setAttribute("aria-modal","true");
+    panel.setAttribute("aria-labelledby","composerPanelTitle");
+    document.body.classList.add("desktop-compose-open");
+    pauseCanvasForComposer();
+    setTimeout(() => $("titleInput").focus(),80);
+  }
+  function closeDesktopComposer(returnFocus=false){
+    const panel=$("composerPanel"), memory=$("memoryPanel"), home=document.querySelector(".side-scroll");
+    const wasOpen=document.body.classList.contains("desktop-compose-open");
+    document.body.classList.remove("desktop-compose-open");
+    panel.removeAttribute("role");
+    panel.removeAttribute("aria-modal");
+    panel.removeAttribute("aria-labelledby");
+    if(panel.parentElement === document.body && home && memory) home.insertBefore(panel,memory);
+    if(wasOpen) resumeCanvasAfterComposer();
+    if(returnFocus && isDesktopComposerUX()) $("desktopComposeBtn").focus();
+  }
+
+  function addNote(){
+    const titleRaw = $("titleInput").value.trim();
+    const body = $("bodyInput").value.trim();
+    const type = $("typeInput").value || selectedType || "memo";
+    if(!titleRaw) return toast("タイトルを入力してください。");
+    if(!body) return toast("本文を入力してください。");
+    const manualTags = parseList($("tagsInput").value, 10);
+    const textTags = extractTagsFromText(body);
+    const tags = [...new Set([...manualTags, ...textTags])].slice(0,10);
+    const note = normalizeNote({
+      id: uid(), title: titleRaw, type, body, raw: body, content: makeContent(body), tags,
+      aiSummary:"", keywords:[], imageData: attachedImage,
+      starColor: typeInfo(type).color, textColor: typeInfo(type).color, createdAt: new Date().toISOString(), createdLabel: nowText()
+    });
+    if(!saveNotes([...notes,note])) return;
+    selectedId = note.id; focusedNodeId = note.id;
+    $("titleInput").value = ""; $("bodyInput").value = ""; $("tagsInput").value = ""; clearImage(false);
+    initPhysics(true); render(); closeMobileSheet(); closeDesktopComposer(); toast("星片を1つ綴りました。✦");
+  }
+
+  function buildGraph(){
+    if(!graphDirty && graphCache) return graphCache;
+    if(activeGraphTag && !notes.some(note=>(note.tags||[]).includes(activeGraphTag))) activeGraphTag="";
+    const graphNotes=activeGraphTag ? notes.filter(note=>(note.tags||[]).includes(activeGraphTag)) : notes;
+    const nodes = new Map();
+    const edges = new Map();
+    const addNode = (n) => { if(!nodes.has(n.id)) nodes.set(n.id, n); return nodes.get(n.id); };
+    const addEdge = (source,target,type) => {
+      if(!source || !target || source === target) return;
+      const key = type === "manual" ? [source,target].sort().join("--") : `${source}>${target}`;
+      const id = `${type}:${key}`;
+      if(!edges.has(id)) edges.set(id,{id,source,target,type});
+    };
+    for(const note of graphNotes){
+      const t = typeInfo(note.type);
+      addNode({ id:note.id, type:"note", label:note.title, noteId:note.id, color:note.starColor || t.color, textColor:note.textColor || COLOR.text, kind:note.type });
+      const tags = (note.tags || []).filter(Boolean);
+      const branches = activeGraphTag ? [activeGraphTag] : (tags.length ? tags : ["未分類"]);
+      for(const tag of branches){
+        const tagId = `tag:${graphKey(tag)}`;
+        const style = tagStyles[graphKey(tag)] || {};
+        addNode({ id:tagId, type:"tag", label:tag, color:style.starColor || (tag === "未分類" ? "#6F7380" : colorForTag(tag)), textColor:style.textColor || COLOR.text });
+        addEdge(tagId, note.id, "tag");
+      }
+    }
+    const ids = new Set(graphNotes.map(n=>n.id));
+    for(const note of graphNotes){
+      for(const target of note.links || []) if(ids.has(target)) addEdge(note.id, target, "manual");
+    }
+    graphCache = { nodes:[...nodes.values()], edges:[...edges.values()] };
+    graphDirty = false;
+    return graphCache;
+  }
+  function graphKey(value){ return encodeURIComponent(String(value||"").trim().toLowerCase()); }
+  function colorForTag(tag){
+    const exact = {"読書":"#D8C48A","仕事":"#8AB4FF","英語":"#9FC9A8","習慣":"#E8A35B","カメラ":"#B8A7FF","思考":"#E6A0B7","アイデア":"#F0D36D","メモ":"#ECE8DE"};
+    if(exact[tag]) return exact[tag];
+    let hash = 0; for(const ch of String(tag)) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+    const palette = ["#D8C48A","#8AB4FF","#9FC9A8","#E6A0B7","#B8A7FF","#E8A35B","#BFD7FF"];
+    return palette[hash % palette.length];
+  }
+  function isComposerVisible(){ return document.body.classList.contains("desktop-compose-open") || document.body.classList.contains("mobile-sheet-compose"); }
+  function canvasMustPause(){ return document.hidden || isComposerVisible(); }
+  function stopCanvasScheduling(){
+    if(canvasFrameId){ cancelAnimationFrame(canvasFrameId); canvasFrameId=0; }
+    if(idleTwinkleTimer){ clearTimeout(idleTwinkleTimer); idleTwinkleTimer=0; }
+  }
+  function pauseCanvasForComposer(){ stopCanvasScheduling(); }
+  function scheduleIdleTwinkle(){
+    if(idleTwinkleTimer) clearTimeout(idleTwinkleTimer);
+    idleTwinkleTimer=0;
+    if(canvasMustPause() || reduceMotion || physicsAwake || draggingId || pinchStart) return;
+    idleTwinkleTimer=setTimeout(()=>{
+      idleTwinkleTimer=0;
+      if(canvasMustPause() || physicsAwake || draggingId || pinchStart) return;
+      draw();
+      scheduleIdleTwinkle();
+    },5000);
+  }
+  function requestCanvasFrame(){
+    if(idleTwinkleTimer){ clearTimeout(idleTwinkleTimer); idleTwinkleTimer=0; }
+    if(canvasMustPause() || canvasFrameId) return;
+    canvasFrameId=requestAnimationFrame(tick);
+  }
+  function resumeCanvasAfterComposer(){
+    if(canvasMustPause()) return;
+    draw();
+    lastFrameTime=performance.now();
+    if(physicsAwake || dragStarted || pinchStart) requestCanvasFrame();
+    else scheduleIdleTwinkle();
+  }
+  function wakePhysics(){ physicsAwake=true; settledFrames=0; lastFrameTime=0; requestCanvasFrame(); }
+  function applyRepulsion(idA,idB,nodeById){
+    const a=physics[idA], b=physics[idB]; if(!a||!b) return;
+    let dx=a.x-b.x, dy=a.y-b.y, dist=Math.sqrt(dx*dx+dy*dy)||.1;
+    const an=nodeById.get(idA), bn=nodeById.get(idB), spread=an?.type==="tag"||bn?.type==="tag"?136:78;
+    const force=(spread*spread)/(dist*dist)*4.1; dx/=dist; dy/=dist;
+    if(!a.pinned && draggingId!==idA){ a.vx+=dx*force*.018; a.vy+=dy*force*.018; }
+    if(!b.pinned && draggingId!==idB){ b.vx-=dx*force*.018; b.vy-=dy*force*.018; }
+  }
+
+  function initPhysics(near=false){
+    const graph = buildGraph();
+    const w = size.w || 800, h = size.h || 500;
+    const tags = graph.nodes.filter(n=>n.type === "tag");
+    const notesNodes = graph.nodes.filter(n=>n.type === "note");
+    const radius = Math.min(w,h) * (tags.length <= 1 ? 0 : 0.30);
+    tags.forEach((node,index) => {
+      const saved=nodeLayouts[node.id];
+      if(saved){ physics[node.id]={x:clamp(saved.x*w,68,w-68),y:clamp(saved.y*h,56,h-56),vx:0,vy:0,pinned:true}; return; }
+      if(physics[node.id]) return;
+      const angle = -Math.PI/2 + (Math.PI*2*index) / Math.max(tags.length,1);
+      physics[node.id] = { x:w/2 + Math.cos(angle)*radius, y:h/2 + Math.sin(angle)*radius, vx:0, vy:0 };
+    });
+    notesNodes.forEach(node => {
+      const saved=nodeLayouts[node.id];
+      if(saved){ physics[node.id]={x:clamp(saved.x*w,42,w-42),y:clamp(saved.y*h,56,h-56),vx:0,vy:0,pinned:true}; return; }
+      if(physics[node.id]) return;
+      const parentEdge = graph.edges.find(e => e.target === node.id && e.type === "tag");
+      const parent = parentEdge && physics[parentEdge.source] ? physics[parentEdge.source] : { x:w/2, y:h/2 };
+      physics[node.id] = { x:parent.x + (Math.random()-.5)*(near?70:150), y:parent.y + (Math.random()-.5)*(near?70:150), vx:0, vy:0 };
+    });
+    const live = new Set(graph.nodes.map(n=>n.id));
+    Object.keys(physics).forEach(id => { if(!live.has(id)) delete physics[id]; });
+    wakePhysics();
+  }
+  function resize(){
+    const rect = graphArea.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    size = { w:Math.max(rect.width,320), h:Math.max(rect.height,300) };
+    canvas.width = Math.floor(size.w * dpr); canvas.height = Math.floor(size.h * dpr);
+    canvas.style.width = size.w + "px"; canvas.style.height = size.h + "px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    initPhysics(false);
+  }
+  function tick(now = performance.now()){
+    canvasFrameId=0;
+    if(canvasMustPause()) return;
+    const active=physicsAwake || dragStarted || !!pinchStart;
+    const frameGap=reduceMotion ? 120 : (notes.length>90 ? 32 : 16);
+    if(active && now-lastFrameTime<frameGap){ requestCanvasFrame(); return; }
+    if(active){
+      const state=updatePhysics();
+      settledFrames=(state.movable===0 || state.maxSpeed<.025) ? settledFrames+1 : 0;
+      if(settledFrames>45 && !dragStarted && !pinchStart) physicsAwake=false;
+    }
+    draw();
+    lastFrameTime=now;
+    if(physicsAwake || dragStarted || pinchStart) requestCanvasFrame();
+    else scheduleIdleTwinkle();
+  }
+  function updatePhysics(){
+    const graph = buildGraph(), ids = graph.nodes.map(n=>n.id), edges = graph.edges, w=size.w, h=size.h;
+    const nodeById = new Map(graph.nodes.map(n=>[n.id,n]));
+    if(ids.length<=70){
+      for(let i=0;i<ids.length;i++) for(let j=i+1;j<ids.length;j++) applyRepulsion(ids[i],ids[j],nodeById);
+    }else{
+      // 多数の星では近隣セルだけを比較し、全組み合わせ計算を避ける。
+      const cellSize=150, buckets=new Map(), indexById=new Map(ids.map((id,index)=>[id,index]));
+      for(const id of ids){ const p=physics[id]; if(!p) continue; const key=`${Math.floor(p.x/cellSize)},${Math.floor(p.y/cellSize)}`; if(!buckets.has(key)) buckets.set(key,[]); buckets.get(key).push(id); }
+      for(let i=0;i<ids.length;i++){
+        const id=ids[i], p=physics[id]; if(!p) continue; const cx=Math.floor(p.x/cellSize), cy=Math.floor(p.y/cellSize);
+        for(let ox=-1;ox<=1;ox++) for(let oy=-1;oy<=1;oy++) for(const other of buckets.get(`${cx+ox},${cy+oy}`)||[]) if(indexById.get(other)>i) applyRepulsion(id,other,nodeById);
+      }
+    }
+    for(const e of edges){
+      const a=physics[e.source], b=physics[e.target]; if(!a||!b) continue;
+      let dx=b.x-a.x, dy=b.y-a.y, dist=Math.sqrt(dx*dx+dy*dy)||.1;
+      const desired = e.type === "manual" ? 108 : 132;
+      const force=(dist-desired)*(e.type === "manual" ? .018 : .022); dx/=dist; dy/=dist;
+      if(!a.pinned && draggingId!==e.source){ a.vx += dx*force; a.vy += dy*force; }
+      if(!b.pinned && draggingId!==e.target){ b.vx -= dx*force; b.vy -= dy*force; }
+    }
+    const tagNodes = graph.nodes.filter(n=>n.type === "tag");
+    let maxSpeed=0, movable=0;
+    for(const id of ids){
+      const p=physics[id]; if(!p || draggingId === id) continue;
+      if(p.pinned){ p.vx=0; p.vy=0; continue; }
+      movable++;
+      const node = nodeById.get(id);
+      if(node?.type === "tag"){
+        const index = tagNodes.findIndex(n=>n.id===id);
+        const radius = Math.min(w,h) * (tagNodes.length <= 1 ? 0 : .30);
+        const angle = -Math.PI/2 + (Math.PI*2*index)/Math.max(tagNodes.length,1);
+        p.vx += (w/2 + Math.cos(angle)*radius - p.x) * .004;
+        p.vy += (h/2 + Math.sin(angle)*radius - p.y) * .004;
+      }else{
+        p.vx += (w/2 - p.x) * .00025; p.vy += (h/2 - p.y) * .00025;
+      }
+      p.vx *= .86; p.vy *= .86; p.x += p.vx; p.y += p.vy;
+      maxSpeed=Math.max(maxSpeed,Math.abs(p.vx)+Math.abs(p.vy));
+      const margin = node?.type === "tag" ? 68 : 42;
+      p.x = Math.max(margin, Math.min(w-margin, p.x)); p.y = Math.max(56, Math.min(h-56, p.y));
+    }
+    return {maxSpeed,movable};
+  }
+  function draw(){
+    const w=size.w,h=size.h, graph=buildGraph(), time=(performance.now()-startedAt)/1000;
+    const nodeById = new Map(graph.nodes.map(n=>[n.id,n]));
+    const liveIds = new Set(graph.nodes.map(n=>n.id));
+    for(const id of Object.keys(hoverMix)) if(!liveIds.has(id)) delete hoverMix[id];
+    for(const id of Object.keys(starTraits)) if(!liveIds.has(id)) delete starTraits[id];
+    const highlighted = new Set(focusedNodeId ? [focusedNodeId] : []);
+    for(const e of graph.edges){ if(e.source === focusedNodeId || e.target === focusedNodeId){ highlighted.add(e.source); highlighted.add(e.target); } }
+    ctx.clearRect(0,0,w,h); drawBackground(w,h,time);
+    ctx.save(); ctx.translate(view.x,view.y); ctx.scale(view.scale,view.scale);
+    const useReadableDesktopGraph = isDesktopComposerUX();
+    for(const e of graph.edges){
+      const a=physics[e.source], b=physics[e.target]; if(!a||!b) continue;
+      const hasFocus = !!focusedNodeId;
+      const isSel = hasFocus && highlighted.has(e.source) && highlighted.has(e.target);
+      const sourceColor = nodeById.get(e.source)?.color || COLOR.gold2;
+      const targetColor = nodeById.get(e.target)?.color || COLOR.gold2;
+      const lineColor = e.type === "manual" ? COLOR.manual : (isSel ? blendColors(sourceColor, targetColor) : COLOR.edge);
+      const lineAlpha = e.type === "manual"
+        ? (isSel ? .88 : (hasFocus ? .14 : (useReadableDesktopGraph ? .46 : .40)))
+        : (isSel ? .82 : (hasFocus ? .10 : (useReadableDesktopGraph ? .34 : .25)));
+      const grad = ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+      grad.addColorStop(0, colorToRgba(lineColor, lineAlpha * 1.04));
+      grad.addColorStop(.46, colorToRgba(lineColor, lineAlpha * (useReadableDesktopGraph ? .52 : .40)));
+      grad.addColorStop(.54, colorToRgba(lineColor, lineAlpha * (useReadableDesktopGraph ? .52 : .40)));
+      grad.addColorStop(1, colorToRgba(lineColor, lineAlpha * .96));
+      ctx.save(); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.lineCap="round"; ctx.lineJoin="round";
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = e.type === "manual"
+        ? (isSel ? 2.9 : (useReadableDesktopGraph ? 1.5 : 1.4))
+        : (isSel ? 2.55 : (useReadableDesktopGraph ? 1.1 : .95));
+      if(isSel){ ctx.shadowBlur = 8; ctx.shadowColor = colorToRgba(lineColor,.42); }
+      if(e.type === "manual") ctx.setLineDash([5,5]);
+      ctx.stroke(); ctx.restore();
+    }
+    const order = [...graph.nodes].sort((a,b)=>({note:0,tag:1}[a.type]-{note:0,tag:1}[b.type]));
+    const useReadableDesktopLabels = isDesktopComposerUX();
+    const labelItems = [];
+    for(const node of order){
+      const p=physics[node.id]; if(!p) continue;
+      const trait = getStarTrait(node.id, node.type);
+      const targetHover = hoveredNodeId === node.id ? 1 : 0;
+      const currentHover = hoverMix[node.id] || 0;
+      const hover = reduceMotion ? targetHover : currentHover + (targetHover - currentHover) * .20;
+      hoverMix[node.id] = hover < .002 ? 0 : hover;
+      const isSel = focusedNodeId === node.id, isRelated = !focusedNodeId || highlighted.has(node.id);
+      const starColor = node.color || COLOR.gold2, textColor = node.textColor || COLOR.text;
+      const base = (node.type === "tag" ? 10.9 : 5.35) * trait.size;
+      const twinkle = reduceMotion ? 0 : Math.sin(time * trait.speed + trait.phase) * trait.twinkle;
+      const breathRaw = isSel && !reduceMotion ? .5 + .5 * Math.sin(time * 1.72 + trait.phase) : 0;
+      const breath = breathRaw * breathRaw * (3 - 2 * breathRaw);
+      const relatedLift = focusedNodeId && isRelated ? .55 : 0;
+      const r = base + (isSel ? 1.1 + breath * 1.15 : relatedLift) + base * .065 * hover;
+      const glowBase = (node.type === "tag" ? 63 : 34) * trait.glow;
+      const glow = glowBase + (isSel ? 9 + breath * 7 : (focusedNodeId && isRelated ? 4 : 0)) + (node.type === "tag" ? 6 : 4) * hover;
+      const nodeAlpha = isRelated ? 1 : .25;
+      const light = 1 + twinkle + hover * .055 + (isSel ? .06 + breath * .08 : 0);
+
+      const outer = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,glow);
+      outer.addColorStop(0, hexToRgba(starColor, Math.min(.46, (isSel ? .34 : (focusedNodeId && isRelated ? .23 : .13)) * light)));
+      outer.addColorStop(.32, hexToRgba(starColor, Math.min(.20, (isSel ? .15 : .060) * light)));
+      outer.addColorStop(.72, hexToRgba(starColor, Math.min(.055, .020 * light)));
+      outer.addColorStop(1, hexToRgba(starColor,0));
+      ctx.globalAlpha = nodeAlpha;
+      ctx.fillStyle = outer; ctx.beginPath(); ctx.arc(p.x,p.y,glow,0,Math.PI*2); ctx.fill();
+
+      if(node.type === "tag"){
+        const compassColor = blendColors(starColor,COLOR.gold2);
+        const compassFill = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*1.95);
+        compassFill.addColorStop(0,hexToRgba("#ffffff",Math.min(1,.96*trait.core)));
+        compassFill.addColorStop(.22,colorToRgba(COLOR.gold2,Math.min(1,.94*light)));
+        compassFill.addColorStop(.62,colorToRgba(compassColor,Math.min(.98,.86*light)));
+        compassFill.addColorStop(1,colorToRgba(starColor,Math.min(.88,.72*light)));
+        ctx.save();
+        ctx.fillStyle = compassFill;
+        ctx.strokeStyle = colorToRgba(COLOR.gold2,Math.min(.88,(.62+hover*.08+breath*.08)*light));
+        ctx.lineWidth = isSel ? 1.05 : .72;
+        ctx.lineJoin = "round";
+        ctx.shadowBlur = isSel ? 12 : 6;
+        ctx.shadowColor = colorToRgba(starColor,.48);
+        traceCompassStar(ctx,p.x,p.y,r*1.95,r*1.28,r*.30);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        ctx.fillStyle = hexToRgba("#ffffff",Math.min(.94,(.72+hover*.10+breath*.10)*trait.core));
+        ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(1.4,r*.25),0,Math.PI*2); ctx.fill();
+        ctx.save();
+        ctx.strokeStyle = colorToRgba(COLOR.gold2,Math.min(.84,(.58+hover*.08+breath*.08)*light));
+        ctx.lineWidth = isSel ? 1.55 : 1.18;
+        ctx.shadowBlur = isSel ? 7 : 3;
+        ctx.shadowColor = hexToRgba(starColor,.30);
+        ctx.beginPath(); ctx.arc(p.x,p.y,r*2.18,0,Math.PI*2); ctx.stroke();
+        ctx.restore();
+      }else{
+        const inner = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*2.55);
+        inner.addColorStop(0, hexToRgba("#ffffff", Math.min(1, (.94 + hover*.04 + (isSel ? .04 : 0)) * trait.core)));
+        inner.addColorStop(.18, hexToRgba("#ffffff", Math.min(.68, (.48 + hover*.07 + breath*.08) * trait.core)));
+        inner.addColorStop(.44, hexToRgba(starColor, Math.min(.94, .80 * light)));
+        inner.addColorStop(1, hexToRgba(starColor,0));
+        ctx.fillStyle = inner; ctx.beginPath(); ctx.arc(p.x,p.y,r*2.55,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = hexToRgba(starColor, Math.min(.92, .78 * light)); ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = hexToRgba("#ffffff", Math.min(.82, (.52 + hover*.12 + breath*.10) * trait.core)); ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(1.05,r*.20),0,Math.PI*2); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      const noteFontSize = useReadableDesktopLabels ? Math.max(13,12.5/Math.max(view.scale,.01)) : 10;
+      const label = node.type === "tag" ? `#${node.label}` : `${typeInfo(node.kind).icon} ${node.label}`;
+      const labelText = truncate(label, node.type === "tag" ? 13 : 12);
+      labelItems.push({node,p,r,textColor,labelText,noteFontSize,isRelated,isSel,hover,twinkle});
+    }
+    drawGraphLabels(labelItems,useReadableDesktopLabels);
+    ctx.restore();
+  }
+  function drawGraphLabels(items,useReadableDesktopLabels){
+    const now=performance.now();
+    const idsChanged=graphLabelLayout.size!==items.length || items.some(item=>!graphLabelLayout.has(item.node.id));
+    if(idsChanged || now-graphLabelLayoutAt>(draggingId ? 90 : 190)){
+      graphLabelLayout=buildGraphLabelLayout(items,useReadableDesktopLabels);
+      graphLabelLayoutAt=now;
+    }
+    const ordered=[...items].sort((a,b)=>(a.node.type==="tag"?0:1)-(b.node.type==="tag"?0:1));
+    for(const item of ordered){
+      const placed=graphLabelLayout.get(item.node.id) || {dx:0,dy:item.r+17,fontSize:item.noteFontSize};
+      const weight=item.node.type==="tag" ? "700" : (useReadableDesktopLabels ? "600" : "500");
+      ctx.font=`${weight} ${placed.fontSize}px 'Zen Kaku Gothic New', system-ui, sans-serif`;
+      ctx.fillStyle=item.textColor;
+      ctx.globalAlpha=item.isRelated ? Math.min(1,(item.isSel?1:.88)+item.hover*.10+item.twinkle*.15) : .20;
+      ctx.textAlign="center";
+      const x=item.p.x+placed.dx, y=item.p.y+placed.dy;
+      if(item.node.type==="note" && useReadableDesktopLabels){
+        ctx.save();
+        ctx.strokeStyle="rgba(6,7,11,.92)";
+        ctx.lineWidth=2.6/Math.max(view.scale,.01);
+        ctx.lineJoin="round";
+        ctx.strokeText(item.labelText,x,y);
+        ctx.restore();
+      }
+      ctx.fillText(item.labelText,x,y);
+      ctx.globalAlpha=1;
+    }
+  }
+  function buildGraphLabelLayout(items,useReadableDesktopLabels){
+    const layout=new Map(), grid=new Map(), cell=72;
+    const ordered=[...items].sort((a,b)=>(a.node.type==="tag"?0:1)-(b.node.type==="tag"?0:1));
+    const cellsFor=box=>{
+      const out=[];
+      for(let gx=Math.floor(box.left/cell);gx<=Math.floor(box.right/cell);gx++) for(let gy=Math.floor(box.top/cell);gy<=Math.floor(box.bottom/cell);gy++) out.push(`${gx}:${gy}`);
+      return out;
+    };
+    const overlaps=(a,b)=>a.left<b.right && a.right>b.left && a.top<b.bottom && a.bottom>b.top;
+    const nearby=box=>{
+      const found=new Set();
+      for(const key of cellsFor(box)) for(const other of grid.get(key)||[]) found.add(other);
+      return [...found];
+    };
+    const remember=box=>{ for(const key of cellsFor(box)){ if(!grid.has(key)) grid.set(key,[]); grid.get(key).push(box); } };
+    for(const item of ordered){
+      const isTag=item.node.type==="tag";
+      const baseFont=isTag?15.6:item.noteFontSize;
+      const scales=isTag?[1]:[1,.91,.82,.73,.65];
+      let chosen=null, best=null, bestScore=Infinity;
+      for(const scale of scales){
+        const fontSize=Math.max(isTag?15.6:8,baseFont*scale);
+        const weight=isTag?"700":(useReadableDesktopLabels?"600":"500");
+        ctx.font=`${weight} ${fontSize}px 'Zen Kaku Gothic New', system-ui, sans-serif`;
+        const width=Math.max(18,ctx.measureText(item.labelText).width), height=fontSize*1.24;
+        const below=item.r+(isTag?24:(useReadableDesktopLabels?19:17));
+        const side=item.r+9+width/2;
+        const candidates=[
+          [0,below],[0,-item.r-10],[side,fontSize*.36],[-side,fontSize*.36],
+          [width*.34+item.r+7,below*.72],[-width*.34-item.r-7,below*.72],
+          [width*.34+item.r+7,-item.r-7],[-width*.34-item.r-7,-item.r-7],
+          [0,below+height*1.15],[0,-item.r-10-height*1.10],
+          [side+12,fontSize*.36],[-side-12,fontSize*.36]
+        ];
+        for(const [dx,dy] of candidates){
+          const x=item.p.x+dx, y=item.p.y+dy;
+          const box={left:x-width/2-3,right:x+width/2+3,top:y-height,bottom:y+3};
+          const hits=nearby(box);
+          let score=0;
+          for(const other of hits) if(overlaps(box,other)) score+=(Math.min(box.right,other.right)-Math.max(box.left,other.left))*(Math.min(box.bottom,other.bottom)-Math.max(box.top,other.top));
+          if(score===0){ chosen={dx,dy,fontSize,box}; break; }
+          if(score<bestScore){ bestScore=score; best={dx,dy,fontSize,box}; }
+        }
+        if(chosen) break;
+      }
+      chosen=chosen||best||{dx:0,dy:item.r+17,fontSize:baseFont,box:{left:item.p.x-10,right:item.p.x+10,top:item.p.y,bottom:item.p.y+16}};
+      layout.set(item.node.id,{dx:chosen.dx,dy:chosen.dy,fontSize:chosen.fontSize});
+      remember(chosen.box);
+    }
+    return layout;
+  }
+  function drawBackground(w,h,time){
+    ctx.save();
+    ctx.fillStyle="#101116"; ctx.fillRect(0,0,w,h);
+    const nebulaA = ctx.createRadialGradient(w*.68,h*.24,0,w*.68,h*.24,Math.max(w,h)*.62);
+    nebulaA.addColorStop(0,"rgba(138,180,255,.056)");
+    nebulaA.addColorStop(.42,"rgba(138,180,255,.020)");
+    nebulaA.addColorStop(1,"rgba(138,180,255,0)");
+    ctx.fillStyle = nebulaA; ctx.fillRect(0,0,w,h);
+    const nebulaB = ctx.createRadialGradient(w*.34,h*.72,0,w*.34,h*.72,Math.max(w,h)*.56);
+    nebulaB.addColorStop(0,"rgba(201,162,74,.048)");
+    nebulaB.addColorStop(.44,"rgba(201,162,74,.016)");
+    nebulaB.addColorStop(1,"rgba(201,162,74,0)");
+    ctx.fillStyle = nebulaB; ctx.fillRect(0,0,w,h);
+    const depth = ctx.createLinearGradient(0,0,w,h);
+    depth.addColorStop(0,"rgba(255,255,255,.010)");
+    depth.addColorStop(.56,"rgba(255,255,255,0)");
+    depth.addColorStop(1,"rgba(0,0,0,.14)");
+    ctx.fillStyle = depth; ctx.fillRect(0,0,w,h);
+    for(const s of BG_STARS){
+      const x=s.x*w,y=s.y*h,pulse=reduceMotion ? .72 : .55+.45*(.5+.5*Math.sin(time*s.speed+s.phase));
+      const alpha=s.alpha*pulse, r=s.radius*(.92+pulse*.22);
+      const halo=ctx.createRadialGradient(x,y,0,x,y,r*7); halo.addColorStop(0,rgbaFromArray(s.color,alpha*.22)); halo.addColorStop(1,rgbaFromArray(s.color,0));
+      ctx.fillStyle=halo; ctx.beginPath(); ctx.arc(x,y,r*4.2,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=rgbaFromArray(s.color,alpha); ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function createBackgroundStars(count){
+    const palettes=[[236,232,222],[201,215,255],[255,236,196],[214,225,255]], stars=[];
+    for(let i=0;i<count;i++) stars.push({x:pseudo(100+i*19),y:pseudo(300+i*31),radius:.28+pseudo(500+i*11)*1.15,alpha:.055+pseudo(700+i*17)*.30,speed:.20+pseudo(900+i*23)*.85,phase:pseudo(1200+i*29)*Math.PI*2,color:palettes[Math.floor(pseudo(1400+i*7)*palettes.length)]});
+    return stars;
+  }
+  function pseudo(n){ const x=Math.sin(n)*10000; return x-Math.floor(x); }
+  function rgbaFromArray(arr,a){ return `rgba(${arr[0]},${arr[1]},${arr[2]},${a})`; }
+  function hexToRgba(hex,alpha){ const v=String(hex||"#fff").replace("#",""); const f=v.length===3?v.split("").map(x=>x+x).join(""):v; const r=parseInt(f.slice(0,2),16)||255,g=parseInt(f.slice(2,4),16)||255,b=parseInt(f.slice(4,6),16)||255; return `rgba(${r},${g},${b},${alpha})`; }
+  function parseHex(hex){ const v=String(hex||"").replace("#",""); const f=v.length===3?v.split("").map(x=>x+x).join(""):v; if(f.length!==6) return null; return {r:parseInt(f.slice(0,2),16),g:parseInt(f.slice(2,4),16),b:parseInt(f.slice(4,6),16)}; }
+  function colorLuminance(color){ const p=parseHex(color); if(!p) return 0; const channels=[p.r,p.g,p.b].map(v=>{ const s=v/255; return s<=.03928?s/12.92:Math.pow((s+.055)/1.055,2.4); }); return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722; }
+  function contrastRatio(a,b){ const la=colorLuminance(a),lb=colorLuminance(b),bright=Math.max(la,lb),dark=Math.min(la,lb); return (bright+.05)/(dark+.05); }
+  function hasReadableTextContrast(color){ return HEX_COLOR.test(String(color||"")) && contrastRatio(color,COLOR.panel)>=4.5; }
+  function blendColors(a,b){ const pa=parseHex(a),pb=parseHex(b); if(!pa||!pb) return COLOR.gold; return `rgb(${Math.round((pa.r+pb.r)/2)},${Math.round((pa.g+pb.g)/2)},${Math.round((pa.b+pb.b)/2)})`; }
+  function traceCompassStar(context,x,y,cardinalRadius,diagonalRadius,innerRadius){
+    context.beginPath();
+    for(let i=0;i<16;i++){
+      const angle=-Math.PI/2+i*Math.PI/8;
+      const radius=i%2 ? innerRadius : ((i/2)%2===0 ? cardinalRadius : diagonalRadius);
+      const px=x+Math.cos(angle)*radius, py=y+Math.sin(angle)*radius;
+      if(i===0) context.moveTo(px,py); else context.lineTo(px,py);
+    }
+    context.closePath();
+  }
+  function colorToRgba(color,alpha){
+    const m=String(color||"").match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if(m) return `rgba(${m[1]},${m[2]},${m[3]},${alpha})`;
+    return hexToRgba(color,alpha);
+  }
+  function getStarTrait(id,type){
+    if(starTraits[id]) return starTraits[id];
+    let h=2166136261;
+    const s=String(id||"");
+    for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); }
+    const p=(n)=>pseudo((h>>>0)+n);
+    return starTraits[id]={
+      phase:p(11)*Math.PI*2,
+      speed:.58+p(23)*.72,
+      twinkle:.016+p(37)*.030,
+      size:.975+p(41)*.050,
+      glow:(type === "tag" ? 1.055 : .97) + p(53)*.060,
+      core:.94+p(67)*.10
+    };
+  }
+
+  function findNode(x,y,minRadius=0){
+    const graph=buildGraph();
+    const ordered=[...graph.nodes].sort((a,b)=>({tag:0,note:1}[a.type]-{tag:0,note:1}[b.type]));
+    for(const node of ordered){ const p=physics[node.id], r=Math.max(node.type === "tag" ? 26 : 17,minRadius); if(p && Math.hypot(p.x-x,p.y-y)<r) return node.id; }
+    return null;
+  }
+  function getPointerPos(e){ const rect=canvas.getBoundingClientRect(); const pt=e.touches?.[0] || e.changedTouches?.[0] || e; return {x:pt.clientX-rect.left, y:pt.clientY-rect.top}; }
+  function screenToWorld(pos){ return {x:(pos.x-view.x)/view.scale, y:(pos.y-view.y)/view.scale}; }
+  function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+  function updateZoomLabel(){ $("zoomLevel").textContent = `${Math.round(view.scale*100)}%`; }
+  function setZoom(next, center={x:size.w/2,y:size.h/2}){ const scale=clamp(next,VIEW_MIN,VIEW_MAX); const world=screenToWorld(center); view.scale=scale; view.x=center.x-world.x*scale; view.y=center.y-world.y*scale; updateZoomLabel(); lastFrameTime=0; requestCanvasFrame(); }
+  function resetView(){ view={scale:1,x:0,y:0}; updateZoomLabel(); lastFrameTime=0; requestCanvasFrame(); toast("表示をリセットしました。"); }
+  function touchMidpointAndDistance(touches){ const rect=canvas.getBoundingClientRect(), a=touches[0], b=touches[1]; return { midpoint:{x:(a.clientX+b.clientX)/2-rect.left, y:(a.clientY+b.clientY)/2-rect.top}, distance:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY) }; }
+  function resetPointerGesture(restoreDragged=false){
+    if(restoreDragged && draggingId && dragOrigin && physics[draggingId]) Object.assign(physics[draggingId],dragOrigin);
+    draggingId=null; downPos=null; panning=false; panStart=null; dragStarted=false; dragOrigin=null; pointerIsTouch=false; canvas.style.cursor="default"; lastFrameTime=0; requestCanvasFrame();
+  }
+  function onDown(e){
+    requestCanvasFrame();
+    if(e.touches?.length===2){ if(draggingId&&dragOrigin&&physics[draggingId]) Object.assign(physics[draggingId],dragOrigin); const g=touchMidpointAndDistance(e.touches); pinchStart={distance:g.distance,scale:view.scale,world:screenToWorld(g.midpoint)}; resetPointerGesture(false); requestCanvasFrame(); e.preventDefault();return; }
+    const screen=getPointerPos(e), world=screenToWorld(screen), minTouchRadius=e.touches ? 22/view.scale : 0, id=findNode(world.x,world.y,minTouchRadius); downPos=screen;
+    pointerIsTouch=!!e.touches; dragStarted=false;
+    if(id){ draggingId=id; dragOrigin=physics[id]?{x:physics[id].x,y:physics[id].y,vx:physics[id].vx,vy:physics[id].vy,pinned:physics[id].pinned}:null; panning=false; } else { draggingId=null; dragOrigin=null; panning=true; panStart={x:screen.x,y:screen.y,viewX:view.x,viewY:view.y}; }
+    e.preventDefault();
+  }
+  function onMove(e){
+    if(e.touches?.length===2 && pinchStart){ const g=touchMidpointAndDistance(e.touches), scale=clamp(pinchStart.scale*g.distance/Math.max(pinchStart.distance,1),VIEW_MIN,VIEW_MAX); view.scale=scale; view.x=g.midpoint.x-pinchStart.world.x*scale; view.y=g.midpoint.y-pinchStart.world.y*scale; updateZoomLabel(); requestCanvasFrame(); e.preventDefault(); return; }
+    const screen=getPointerPos(e);
+    if(!e.touches && !draggingId && !panning){
+      const world=screenToWorld(screen), id=findNode(world.x,world.y);
+      if(hoveredNodeId !== id){ hoveredNodeId = id; canvas.style.cursor = id ? "pointer" : "grab"; requestCanvasFrame(); }
+    }
+    if(draggingId){
+      const moved=downPos?Math.hypot(screen.x-downPos.x,screen.y-downPos.y):0, threshold=pointerIsTouch?12:5;
+      if(!dragStarted && moved<threshold){ e.preventDefault(); return; }
+      if(!dragStarted){ dragStarted=true; wakePhysics(); }
+      const world=screenToWorld(screen), p=physics[draggingId]; if(p){ p.x=world.x; p.y=world.y; p.vx=0; p.vy=0; } canvas.style.cursor="grabbing"; lastFrameTime=0; requestCanvasFrame(); e.preventDefault();
+    }
+    else if(panning && panStart){ view.x=panStart.viewX+screen.x-panStart.x; view.y=panStart.viewY+screen.y-panStart.y; canvas.style.cursor="grabbing"; lastFrameTime=0; requestCanvasFrame(); e.preventDefault(); }
+  }
+  function onUp(e){
+    if(pinchStart){ pinchStart=null; resetPointerGesture(false); return; }
+    if(draggingId && downPos){ if(!dragStarted){ const node=buildGraph().nodes.find(n=>n.id===draggingId); focusedNodeId=draggingId; selectedId = node?.type === "note" ? node.noteId : null; render(); } else if(pinNodePosition(draggingId)){ toast("星の位置を保存しました。"); } }
+    else if(panning && downPos){ const pos=getPointerPos(e), moved=Math.hypot(pos.x-downPos.x,pos.y-downPos.y), threshold=pointerIsTouch?12:5; if(moved<threshold && (selectedId || focusedNodeId)){ selectedId=null; focusedNodeId=null; render(); } }
+    resetPointerGesture(false);
+  }
+  function onCancel(){ pinchStart=null; resetPointerGesture(true); }
+  function onWheel(e){ e.preventDefault(); setZoom(view.scale*(e.deltaY<0?1.12:.89), getPointerPos(e)); }
+
+  function getFilteredNotes(){
+    const q = $("searchInput")?.value.trim().toLowerCase() || "";
+    const type = $("filterType")?.value || "all";
+    return [...notes].reverse().filter(n => {
+      if(type !== "all" && n.type !== type) return false;
+      if(!q) return true;
+      const hay = [n.title,n.body,n.content,(n.tags||[]).join(" "),typeInfo(n.type).label].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  function render(){ renderCounts(); renderList(); renderDetail(); lastFrameTime=0; requestCanvasFrame(); }
+  function availableGraphTags(){ return [...new Set(notes.flatMap(n=>(n.tags||[]).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,"ja")); }
+  function renderGraphTagFilter(){
+    const select=$("graphTagFilter"); if(!select) return;
+    const tags=availableGraphTags();
+    if(activeGraphTag && !tags.includes(activeGraphTag)){ activeGraphTag=""; invalidateGraph(); }
+    select.innerHTML=`<option value="">すべて表示</option>${tags.map(tag=>`<option value="${escapeHtml(tag)}" ${tag===activeGraphTag?"selected":""}>#${escapeHtml(tag)}</option>`).join("")}`;
+  }
+  function setGraphTagFilter(tag){
+    const next=cleanTag(tag||"");
+    activeGraphTag=next && availableGraphTags().includes(next) ? next : "";
+    selectedId=null; focusedNodeId=null; invalidateGraph(); initPhysics(true); render();
+    toast(activeGraphTag ? `#${activeGraphTag} の星図だけを表示します。` : "すべての星図を表示します。");
+  }
+  function renderCounts(){
+    renderGraphTagFilter();
+    $("noteCount").textContent = `${notes.length} 星片`;
+    const graphEmpty = $("graphEmpty");
+    if(graphEmpty){ graphEmpty.classList.toggle("show", notes.length === 0); }
+    const filtered = getFilteredNotes();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE));
+    if(listPage >= totalPages) listPage = totalPages - 1;
+    $("filteredCount").textContent = filtered.length ? `${filtered.length}件 / ${totalPages}頁` : "0件表示";
+    const counts = TYPES.map(t => `${t.icon} ${notes.filter(n=>n.type===t.key).length}`);
+    $("stats").innerHTML = counts.map(c => `<span class="stat">${escapeHtml(c)}</span>`).join("");
+    renderGraphAccessList();
+  }
+  function renderGraphAccessList(){
+    const host=$("graphAccessList"); if(!host) return;
+    const graph=buildGraph(), tags=graph.nodes.filter(n=>n.type==="tag"), noteItems=[...notes].sort((a,b)=>String(a.title).localeCompare(String(b.title),"ja"));
+    host.innerHTML=`<div class="graph-access-group"><div class="graph-access-label">タグ</div>${tags.length?tags.map(n=>`<button type="button" data-graph-node="${escapeHtml(n.id)}">#${escapeHtml(n.label)}</button>`).join(""):`<span class="hint">タグなし</span>`}</div><div class="graph-access-group"><div class="graph-access-label">星片</div>${noteItems.length?noteItems.map(n=>`<button type="button" data-note-id="${escapeHtml(n.id)}">${escapeHtml(typeInfo(n.type).icon)} ${escapeHtml(n.title)}</button>`).join(""):`<span class="hint">星片なし</span>`}</div>`;
+    host.querySelectorAll("[data-graph-node]").forEach(button=>button.onclick=()=>{ selectedId=null; focusedNodeId=button.dataset.graphNode; render(); setTimeout(()=>$("detail")?.focus(),0); });
+    host.querySelectorAll("[data-note-id]").forEach(button=>button.onclick=()=>{ selectedId=button.dataset.noteId; focusedNodeId=selectedId; render(); closeMobileSheet(); setTimeout(()=>$("detail")?.focus(),0); });
+  }
+  function renderList(){
+    const list = $("noteList"), pager = $("listPager"), filtered = getFilteredNotes();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE));
+    listPage = Math.max(0, Math.min(listPage, totalPages - 1));
+    if(!filtered.length){
+      list.innerHTML = `<div class="empty">最初の星片を綴りましょう。</div>`;
+      if(pager) pager.hidden = true;
+      return;
+    }
+    const start = listPage * LIST_PAGE_SIZE;
+    const pageItems = filtered.slice(start, start + LIST_PAGE_SIZE);
+    list.innerHTML = pageItems.map(n => {
+      const t=typeInfo(n.type);
+      return `<div class="note-card ${selectedId===n.id ? "active" : ""}" tabindex="0" role="button" data-id="${escapeHtml(n.id)}" style="border-left-color:${escapeHtml(n.starColor||t.color)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}"><span style="color:${escapeHtml(n.starColor||t.color)}">✦</span><span>${escapeHtml(n.title)}</span></div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div><div class="note-meta"><span class="kind">${t.icon} ${t.label}</span>${(n.tags||[]).slice(0,3).map(tag=>`<span class="tag">#${escapeHtml(tag)}</span>`).join("")}${n.links?.length?`<span class="keyword">線 ${n.links.length}</span>`:""}</div></div>`;
+    }).join("");
+    if(pager){
+      pager.hidden = totalPages <= 1;
+      $("pageStatus").textContent = `第${listPage + 1}星域 / ${totalPages}`;
+      $("prevPageBtn").disabled = listPage <= 0;
+      $("nextPageBtn").disabled = listPage >= totalPages - 1;
+    }
+    list.querySelectorAll(".note-card").forEach(card => { const open=()=>{ selectedId=card.dataset.id; focusedNodeId=selectedId; render(); closeMobileSheet(); }; card.onclick=open; card.onkeydown=(e)=>{ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } }; });
+  }
+  function renderDetail(){
+    const detail = $("detail");
+    const n = notes.find(x=>x.id===selectedId);
+    if(!n){
+      const node = buildGraph().nodes.find(x=>x.id===focusedNodeId);
+      if(node?.type === "tag") return renderTagDetail(node);
+      detail.hidden = true; detail.innerHTML = ""; return;
+    }
+    detail.hidden = false;
+    const t = typeInfo(n.type);
+    const candidates = notes.filter(x=>x.id!==n.id);
+    const linked = (n.links || []).map(id => notes.find(x=>x.id===id)).filter(Boolean);
+    detail.innerHTML = `
+      <div class="detail-head">
+        <div><div class="kind">${t.icon} ${t.label}</div><h2 class="font-display" id="detailTitle" data-detail-title style="color:${escapeHtml(n.textColor||COLOR.text)}">${escapeHtml(n.title)}</h2></div>
+        <div class="detail-actions"><button id="editNoteBtn">編集</button><button id="copyNoteBtn">Markdownコピー</button><button class="danger" id="deleteNoteBtn">削除</button><button class="ghost" id="closeDetailBtn">閉じる</button></div>
+      </div>
+      <div class="section"><div class="section-label">自分のメモ</div><div class="markdown" id="bodyView">${renderMarkdown(n.body || n.raw || n.content)}</div>${n.imageData ? `<img class="detail-image" src="${escapeHtml(n.imageData)}" alt="添付画像" />` : ""}</div>
+      <div class="section"><div class="section-label">タグとつながり</div><div class="note-meta">${(n.tags||[]).length ? n.tags.map(tag=>`<span class="tag">#${escapeHtml(tag)}</span>`).join("") : `<span class="hint">タグなし</span>`}</div><div class="link-tools" style="margin-top:10px;"><select id="linkSelect"><option value="">星片を選んでつなげる</option>${candidates.map(x=>`<option value="${escapeHtml(x.id)}">${escapeHtml(typeInfo(x.type).icon + " " + x.title)}</option>`).join("")}</select><button id="addLinkBtn">つなげる</button></div><div class="linked-list">${linked.length ? linked.map(x=>`<span class="link-chip">${escapeHtml(typeInfo(x.type).icon)} ${escapeHtml(x.title)} <button data-unlink="${escapeHtml(x.id)}">×</button></span>`).join("") : `<span class="hint">手動リンクはまだありません。</span>`}</div></div>
+      <div class="edit-tools" id="editTools" hidden>
+        <div class="panel-title">星片を編集</div>
+        <div class="edit-grid" style="margin-top:10px;"><div><label for="editTitleInput">タイトル</label><input id="editTitleInput" value="${escapeHtml(n.title)}" /></div><div><label for="editTypeInput">種類</label><select id="editTypeInput">${TYPES.map(x=>`<option value="${x.key}" ${x.key===n.type?"selected":""}>${x.icon} ${x.label}</option>`).join("")}</select></div></div>
+        <div style="margin-top:10px;"><label for="editTagsInput">タグ</label><input id="editTagsInput" value="${escapeHtml((n.tags||[]).join("、"))}" /></div>
+        <div style="margin-top:10px;"><label for="editBodyInput">自分のメモ</label><textarea id="editBodyInput">${escapeHtml(n.body || n.raw || "")}</textarea><div class="composer-actions highlight-action-row"><button class="highlight-button" id="highlightEditBodyBtn" type="button">蛍光ペン</button><div class="edit-inline-actions"><button id="cancelEditBtn">キャンセル</button><button class="primary" id="saveEditBtn">保存する</button></div></div></div>
+        <div style="margin-top:10px;">
+          <label>画像</label>
+          <div class="composer-actions">
+            <button id="editImageBtn" type="button">画像を選ぶ</button>
+            <input type="file" id="editImageInput" class="file-input" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" />
+            <button id="removeEditImageBtn" type="button" class="ghost">画像を外す</button>
+          </div>
+          <div class="image-preview ${n.imageData?"show":""}" id="editImagePreview" style="margin-top:8px;"><img id="editImagePreviewImg" ${n.imageData?`src="${escapeHtml(n.imageData)}"`:""} alt="編集中の添付画像プレビュー" /><span class="hint">「保存する」を押すと星片に反映されます。</span></div>
+        </div>
+        <div class="appearance-editor" style="margin-top:10px;">
+          <label>見た目</label>
+          <div class="appearance-row">
+            <div class="appearance-row-label"><span>✦</span><div><strong>星の色</strong><small>星図上の星と左端の光の色を変えます</small></div></div>
+            <div class="swatch-row">
+              ${STAR_COLORS.map(c=>`<button class="swatchBtn" title="星の色：${c[0]}" aria-label="星の色 ${c[0]}" data-field="starColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(n.starColor||t.color).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}
+              <label class="appearance-custom" title="星の色を自由に選ぶ"><input type="color" id="customStarColor" value="${escapeHtml(n.starColor||t.color)}"><span>自由色</span></label>
+            </div>
+          </div>
+          <div class="appearance-row">
+            <div class="appearance-row-label"><span>文</span><div><strong>タイトルの文字色</strong><small>星片タイトルと星図ラベルの文字色を変えます</small></div></div>
+            <div class="swatch-row">
+              ${TEXT_COLORS.map(c=>`<button class="swatchBtn" title="タイトルの文字色：${c[0]}" aria-label="タイトルの文字色 ${c[0]}" data-field="textColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(n.textColor||COLOR.text).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}
+              <label class="appearance-custom" title="タイトルの文字色を自由に選ぶ"><input type="color" id="customTextColor" value="${escapeHtml(n.textColor||COLOR.text)}"><span>自由色</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="section"><div class="section-label">ChatGPTで振り返る</div><div class="link-tools"><button id="copySummaryPromptBtn">この星片を要約用にコピー</button><button id="copyTodaySummaryPromptBtn">今日の星片をコピー</button><button id="copyAllSummaryPromptBtn">全星片をコピー</button></div></div>
+      <div class="hint" style="margin-top:10px;">作成：${escapeHtml(n.createdLabel || "")} / 更新：${escapeHtml(n.updatedAt ? new Date(n.updatedAt).toLocaleString("ja-JP") : "")}</div>`;
+    let pendingEditImageData=n.imageData || "";
+    const setEditImagePreview=value=>{ pendingEditImageData=value||""; const preview=$("editImagePreview"), image=$("editImagePreviewImg"); if(pendingEditImageData){ image.src=pendingEditImageData; preview.classList.add("show"); }else{ image.removeAttribute("src"); preview.classList.remove("show"); } };
+    const openEditor = (focus="editTitleInput") => { $("editTools").hidden = false; const target=$(focus); if(target){ target.focus(); if(target.setSelectionRange) target.setSelectionRange(target.value.length,target.value.length); } $("editTools").scrollIntoView({behavior:"smooth",block:"start"}); };
+    $("closeDetailBtn").onclick = () => { selectedId=null; focusedNodeId=null; render(); };
+    $("editNoteBtn").onclick = () => openEditor();
+    $("bodyView").ondblclick = () => openEditor("editBodyInput");
+    $("highlightEditBodyBtn").onmousedown = e => e.preventDefault();
+    $("highlightEditBodyBtn").onclick = () => toggleHighlight("editBodyInput");
+    $("cancelEditBtn").onclick = () => { setEditImagePreview(n.imageData || ""); $("editImageInput").value=""; $("editTools").hidden = true; };
+    $("saveEditBtn").onclick = () => saveEditedNote(n.id,pendingEditImageData);
+    $("editImageBtn").onclick = () => $("editImageInput").click();
+    $("editImageInput").onchange = async e => { const file=e.target.files?.[0]; if(!file) return; toast("画像を端末内で縮小しています…"); try{ setEditImagePreview(await compressImageFile(file)); toast("画像を縮小しました。保存すると反映されます。"); }catch(error){ e.target.value=""; toast(error?.message||"画像を処理できませんでした。"); } };
+    $("removeEditImageBtn").onclick = () => { setEditImagePreview(""); $("editImageInput").value=""; toast("画像を外す準備をしました。保存すると反映されます。"); };
+    $("deleteNoteBtn").onclick = () => askDelete(n.id);
+    $("copyNoteBtn").onclick = () => copyTextToClipboard(noteToMarkdown(n), "Markdown形式でコピーしました。");
+    $("addLinkBtn").onclick = () => addManualLink(n.id, $("linkSelect").value);
+    detail.querySelectorAll("[data-unlink]").forEach(btn => btn.onclick = () => removeManualLink(n.id, btn.dataset.unlink));
+    detail.querySelectorAll(".swatchBtn").forEach(btn => btn.onclick = () => { updateNoteStyle(n.id, btn.dataset.field, btn.dataset.color); });
+    const customStarColor = $("customStarColor");
+    if(customStarColor){
+      customStarColor.oninput = (e) => updateNoteStyle(n.id, "starColor", e.target.value, true);
+      customStarColor.onchange = (e) => updateNoteStyle(n.id, "starColor", e.target.value, false);
+    }
+    const customTextColor = $("customTextColor");
+    if(customTextColor){
+      customTextColor.oninput = (e) => updateNoteStyle(n.id, "textColor", e.target.value, true);
+      customTextColor.onchange = (e) => {
+        if(updateNoteStyle(n.id, "textColor", e.target.value, false) === false){
+          e.target.value = n.textColor || COLOR.text;
+        }
+      };
+    }
+    $("copySummaryPromptBtn").onclick = () => copyTextToClipboard(buildSingleSummaryPrompt(n), "要約用テキストをコピーしました。");
+    $("copyTodaySummaryPromptBtn").onclick = () => { const today=notes.filter(isTodayNote); if(!today.length) return toast("今日作成した星片がありません。"); copyTextToClipboard(buildManyPrompt(today,"以下は今日、星図帖に保存した星片です。振り返りとして要約してください。"), "今日の星片をコピーしました。"); };
+    $("copyAllSummaryPromptBtn").onclick = () => copyTextToClipboard(buildManyPrompt(notes,"以下は星図帖に保存した全星片です。つながりが見えるように要約してください。"), "全星片をコピーしました。");
+  }
+  function renderTagDetail(node){
+    const detail = $("detail"); detail.hidden = false;
+    const tag = node.label;
+    const style = tagStyles[graphKey(tag)] || {};
+    const starColor = style.starColor || node.color || colorForTag(tag);
+    const textColor = style.textColor || node.textColor || COLOR.text;
+    const editable = tag !== "未分類";
+    const related = notes.filter(n => (n.tags || []).includes(tag));
+    detail.innerHTML = `<div class="detail-head"><div><div class="kind">タグ星</div><h2 class="font-display" data-tag-title style="color:${escapeHtml(textColor)}">#${escapeHtml(tag)}</h2></div><div class="detail-actions">${editable?`<button class="primary" id="filterTagBtn">${activeGraphTag===tag?"すべて表示":"このタグだけ表示"}</button><button id="editTagBtn">編集</button><button class="danger" id="deleteTagBtn">削除</button>`:""}<button class="ghost" id="closeDetailBtn">閉じる</button></div></div>
+      ${editable?`<div class="edit-tools" id="tagEditTools" hidden>
+        <div class="panel-title">タグ星を編集</div>
+        <div style="margin-top:10px;"><label for="editTagNameInput">タグ名</label><input id="editTagNameInput" value="${escapeHtml(tag)}" maxlength="32" /></div>
+        <div class="appearance-editor" style="margin-top:10px;">
+          <label>見た目</label>
+          <div class="appearance-row">
+            <div class="appearance-row-label"><span>✦</span><div><strong>星の色</strong><small>タグ星と光の色を変えます</small></div></div>
+            <div class="swatch-row">${TAG_STAR_COLORS.map(c=>`<button class="swatchBtn" title="星の色：${c[0]}" aria-label="星の色 ${c[0]}" data-tag-field="starColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(starColor).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}<label class="appearance-custom" title="星の色を自由に選ぶ"><input type="color" id="customTagStarColor" value="${escapeHtml(starColor)}"><span>自由色</span></label></div>
+          </div>
+          <div class="appearance-row">
+            <div class="appearance-row-label"><span>文</span><div><strong>文字の色</strong><small>タグ星の名前の色を変えます</small></div></div>
+            <div class="swatch-row">${TAG_TEXT_COLORS.map(c=>`<button class="swatchBtn" title="文字の色：${c[0]}" aria-label="文字の色 ${c[0]}" data-tag-field="textColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(textColor).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}<label class="appearance-custom" title="文字の色を自由に選ぶ"><input type="color" id="customTagTextColor" value="${escapeHtml(textColor)}"><span>自由色</span></label></div>
+          </div>
+        </div>
+        <div class="edit-actions"><button id="cancelTagEditBtn">キャンセル</button><button class="primary" id="saveTagEditBtn">保存する</button></div>
+      </div>`:`<div class="hint" style="margin-top:10px;">「未分類」は自動で作られるタグ星です。</div>`}
+      <div class="section"><div class="section-label">このタグにつながる星片</div>${related.length ? related.map(n=>`<div class="note-card" tabindex="0" role="button" data-id="${escapeHtml(n.id)}" style="margin-top:8px;border-left-color:${escapeHtml(n.starColor||typeInfo(n.type).color)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}">${escapeHtml(typeInfo(n.type).icon)} ${escapeHtml(n.title)}</div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div></div>`).join("") : `<div class="hint">星片がありません。</div>`}</div>`;
+    $("closeDetailBtn").onclick = () => { selectedId=null; focusedNodeId=null; render(); };
+    if(editable){
+      $("filterTagBtn").onclick = () => setGraphTagFilter(activeGraphTag===tag ? "" : tag);
+      $("editTagBtn").onclick = () => { $("tagEditTools").hidden=false; $("editTagNameInput").focus(); $("tagEditTools").scrollIntoView({behavior:"smooth",block:"start"}); };
+      $("cancelTagEditBtn").onclick = () => { $("tagEditTools").hidden=true; };
+      $("saveTagEditBtn").onclick = () => saveEditedTag(tag);
+      $("deleteTagBtn").onclick = () => deleteTag(tag);
+      detail.querySelectorAll("[data-tag-field]").forEach(btn => btn.onclick = () => updateTagStyle(tag,btn.dataset.tagField,btn.dataset.color));
+      $("customTagStarColor").oninput = e => updateTagStyle(tag,"starColor",e.target.value,true);
+      $("customTagStarColor").onchange = e => updateTagStyle(tag,"starColor",e.target.value,false);
+      $("customTagTextColor").oninput = e => updateTagStyle(tag,"textColor",e.target.value,true);
+      $("customTagTextColor").onchange = e => {
+        if(updateTagStyle(tag,"textColor",e.target.value,false) === false){
+          e.target.value = style.textColor || COLOR.text;
+        }
+      };
+    }
+    detail.querySelectorAll(".note-card").forEach(card => { const open=()=>{ selectedId=card.dataset.id; focusedNodeId=selectedId; render(); closeMobileSheet(); }; card.onclick=open; card.onkeydown=(e)=>{ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } }; });
+  }
+  function updateTagStyle(tag,field,value,silent=false){
+    const key=graphKey(tag), safeField=field === "textColor" ? "textColor" : "starColor";
+    if(safeField==="textColor" && !hasReadableTextContrast(value)){ if(!silent) toast("文字色が背景に対して読みにくいため、変更しませんでした。"); return false; }
+    const next={...tagStyles,[key]:{...(tagStyles[key]||{}),[safeField]:value}};
+    if(!saveTagStyles(next)) return;
+    const title=document.querySelector("[data-tag-title]");
+    if(title && safeField === "textColor") title.style.color=value;
+    document.querySelectorAll(`[data-tag-field="${safeField}"][data-color]`).forEach(btn=>{ btn.style.borderColor=String(btn.dataset.color).toLowerCase()===String(value).toLowerCase()?"#fff":"rgba(255,255,255,.18)"; });
+    const custom=$(safeField === "starColor" ? "customTagStarColor" : "customTagTextColor");
+    if(custom && String(custom.value).toLowerCase()!==String(value).toLowerCase()) custom.value=value;
+    requestCanvasFrame();
+    if(!silent) toast(safeField === "starColor" ? "タグ星の色を変更しました。" : "タグ星の文字色を変更しました。");
+  }
+  function saveEditedTag(oldTag){
+    const nextTag=cleanTag($("editTagNameInput").value).slice(0,32);
+    if(!nextTag) return toast("タグ名を入力してください。");
+    if(nextTag === "未分類") return toast("「未分類」はタグ名に使えません。");
+    if(nextTag === oldTag){ selectedId=null; focusedNodeId=null; render(); return toast("保存しました。星図に戻りました。"); }
+    const updatedAt=new Date().toISOString();
+    const nextNotes=notes.map(n=>({ ...n, tags:[...new Set((n.tags||[]).map(t=>t===oldTag?nextTag:t))], updatedAt:(n.tags||[]).includes(oldTag)?updatedAt:n.updatedAt }));
+    if(!saveNotes(nextNotes)) return;
+    if(activeGraphTag===oldTag) activeGraphTag=nextTag;
+    const oldKey=graphKey(oldTag), nextKey=graphKey(nextTag), moved={...tagStyles};
+    moveNodeLayout(`tag:${oldKey}`,`tag:${nextKey}`);
+    if(moved[oldKey]){ moved[nextKey]={...(moved[nextKey]||{}),...moved[oldKey]}; delete moved[oldKey]; saveTagStyles(moved); }
+    selectedId=null; focusedNodeId=null; initPhysics(false); render(); toast("保存しました。星図に戻りました。");
+  }
+  function deleteTag(tag){
+    if(!confirm(`タグ「#${tag}」をすべての星片から外しますか？\n星片そのものは削除されません。`)) return;
+    const updatedAt=new Date().toISOString();
+    const nextNotes=notes.map(n=>({ ...n, tags:(n.tags||[]).filter(t=>t!==tag), updatedAt:(n.tags||[]).includes(tag)?updatedAt:n.updatedAt }));
+    if(!saveNotes(nextNotes)) return;
+    if(activeGraphTag===tag) activeGraphTag="";
+    removeNodeLayout(`tag:${graphKey(tag)}`);
+    const nextStyles={...tagStyles}; delete nextStyles[graphKey(tag)]; saveTagStyles(nextStyles);
+    selectedId=null; focusedNodeId=null; initPhysics(false); render(); toast("タグを外しました。星片は残っています。");
+  }
+  function renderMarkdown(text){
+    const safe = escapeHtml(text || "");
+    const inline = value => value.replace(/==(.+?)==/g,'<mark class="text-highlight">$1</mark>').replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/`([^`]+)`/g,"<code>$1</code>");
+    return safe.split("\n").map(line => {
+      if(/^###\s+/.test(line)) return `<h3>${inline(line.replace(/^###\s+/,""))}</h3>`;
+      if(/^##\s+/.test(line)) return `<h2>${inline(line.replace(/^##\s+/,""))}</h2>`;
+      if(/^#\s+/.test(line)) return `<h1>${inline(line.replace(/^#\s+/,""))}</h1>`;
+      let out = inline(line);
+      if(/^[-*]\s+/.test(out)) out = `・${out.replace(/^[-*]\s+/,"")}`;
+      return out;
+    }).join("\n");
+  }
+  function toggleHighlight(textareaId){
+    const area=$(textareaId); if(!area) return;
+    const start=area.selectionStart, end=area.selectionEnd;
+    if(!Number.isFinite(start) || !Number.isFinite(end) || start===end){ area.focus(); return toast("蛍光ペンでマークする文章を選択してください。"); }
+    const value=area.value, selected=value.slice(start,end);
+    let next, selectionStart=start, selectionEnd=end;
+    const lines=selected.split("\n"), markedLines=lines.filter(Boolean), allLinesMarked=markedLines.length>0 && markedLines.every(line=>line.startsWith("==") && line.endsWith("==") && line.length>4);
+    if(lines.length>1){
+      const replacement=lines.map(line=>!line ? line : allLinesMarked ? line.slice(2,-2) : (line.startsWith("==") && line.endsWith("==") ? line : `==${line}==`)).join("\n");
+      next=value.slice(0,start)+replacement+value.slice(end);
+      selectionEnd=start+replacement.length;
+      toast(allLinesMarked ? "蛍光ペンを解除しました。" : "蛍光ペンでマークしました。保存すると反映されます。");
+    }else if(value.slice(Math.max(0,start-2),start)==="==" && value.slice(end,end+2)==="=="){
+      next=value.slice(0,start-2)+selected+value.slice(end+2);
+      selectionStart=start-2; selectionEnd=end-2;
+      toast("蛍光ペンを解除しました。");
+    }else if(selected.startsWith("==") && selected.endsWith("==") && selected.length>4){
+      const plain=selected.slice(2,-2);
+      next=value.slice(0,start)+plain+value.slice(end);
+      selectionEnd=start+plain.length;
+      toast("蛍光ペンを解除しました。");
+    }else{
+      next=value.slice(0,start)+`==${selected}==`+value.slice(end);
+      selectionStart=start+2; selectionEnd=end+2;
+      toast("蛍光ペンでマークしました。保存すると反映されます。");
+    }
+    area.value=next; area.focus(); area.setSelectionRange(selectionStart,selectionEnd);
+  }
+  function saveEditedNote(id,imageData){
+    const n=notes.find(x=>x.id===id); if(!n) return;
+    const title=$("editTitleInput").value.trim(), body=$("editBodyInput").value.trim();
+    if(!title) return toast("タイトルを入力してください。");
+    if(!body) return toast("本文は空にできません。");
+    const type=$("editTypeInput").value;
+    const updated={...n,title,type,body,raw:body,content:makeContent(body),tags:parseList($("editTagsInput").value,10),imageData:imageData||"",updatedAt:new Date().toISOString()};
+    if(!updated.starColor) updated.starColor=typeInfo(type).color;
+    if(!updated.textColor) updated.textColor=COLOR.text;
+    if(!saveNotes(notes.map(x=>x.id===id ? updated : x))) return;
+    selectedId=null; focusedNodeId=null; initPhysics(false); render(); toast("保存しました。星図に戻りました。");
+  }
+  function updateNoteStyle(id, field, value, silent=false){
+    const n=notes.find(x=>x.id===id); if(!n) return;
+    const safeField = field === "textColor" ? "textColor" : "starColor";
+    const color = value || (safeField === "starColor" ? typeInfo(n.type).color : COLOR.text);
+    if(safeField==="textColor" && !hasReadableTextContrast(color)){ if(!silent) toast("文字色が背景に対して読みにくいため、変更しませんでした。"); return false; }
+    const updated = {...n,[safeField]:color,updatedAt:new Date().toISOString()};
+    if(!saveNotes(notes.map(x=>x.id===id ? updated : x))) return;
+
+    const titleEl = document.querySelector('[data-detail-title]');
+    if(titleEl && safeField === "textColor") titleEl.style.color = color;
+
+    document.querySelectorAll(`.swatchBtn[data-field="${safeField}"][data-color]`).forEach(btn => {
+      btn.style.borderColor = String(btn.dataset.color).toLowerCase() === String(color).toLowerCase() ? "#fff" : "rgba(255,255,255,.18)";
+    });
+
+    const customId = safeField === "starColor" ? "customStarColor" : "customTextColor";
+    const custom = $(customId);
+    if(custom && String(custom.value).toLowerCase() !== String(color).toLowerCase()) custom.value = color;
+
+    requestCanvasFrame();
+    if(!silent) toast(safeField === "starColor" ? "星の色を変更しました。" : "タイトルの文字色を変更しました。");
+  }
+  function addManualLink(sourceId,targetId){
+    if(!targetId) return toast("つなげる星片を選んでください。");
+    if(sourceId === targetId) return;
+    const a=notes.find(x=>x.id===sourceId), b=notes.find(x=>x.id===targetId); if(!a||!b) return;
+    const updatedAt=new Date().toISOString();
+    const nextNotes=notes.map(n=>n.id===sourceId ? {...n,links:[...new Set([...(n.links||[]),targetId])],updatedAt} : n.id===targetId ? {...n,links:[...new Set([...(n.links||[]),sourceId])],updatedAt} : n);
+    if(!saveNotes(nextNotes)) return;
+    initPhysics(false); render(); toast("星片同士をつなげました。");
+  }
+  function removeManualLink(sourceId,targetId){
+    const a=notes.find(x=>x.id===sourceId), b=notes.find(x=>x.id===targetId); if(!a||!b) return;
+    const updatedAt=new Date().toISOString();
+    const nextNotes=notes.map(n=>n.id===sourceId ? {...n,links:(n.links||[]).filter(id=>id!==targetId),updatedAt} : n.id===targetId ? {...n,links:(n.links||[]).filter(id=>id!==sourceId),updatedAt} : n);
+    if(!saveNotes(nextNotes)) return;
+    render(); toast("手動リンクを外しました。");
+  }
+  function askDelete(id){ const n=notes.find(x=>x.id===id); if(!n) return; pendingDeleteId=id; $("deleteNoteText").textContent = `「${n.title}」を削除します。この操作は取り消せません。`; showModal("deleteNoteModal"); }
+  function forceDelete(){
+    if(!pendingDeleteId) return;
+    const id=pendingDeleteId, nextNotes=notes.filter(n=>n.id!==id).map(n => ({...n, links:(n.links||[]).filter(x=>x!==id)}));
+    if(!saveNotes(nextNotes)) return;
+    removeNodeLayout(id);
+    delete physics[id];
+    selectedId=null; focusedNodeId=null;
+    pendingDeleteId=null; closeModal("deleteNoteModal"); render(); toast("削除しました。星図に戻りました。");
+  }
+  function clearAll(){ if(!saveNotes([])) return; saveTagStyles({}); clearNodeLayouts(); selectedId=null; focusedNodeId=null; physics={}; closeModal("confirmModal"); render(); toast("すべて削除しました。"); }
+
+  function noteToMarkdown(n){
+    const t=typeInfo(n.type);
+    return ["---",`title: "${String(n.title).replaceAll('"','\\"')}"`,`type: "${t.label}"`,`created: "${n.createdLabel||""}"`,"tags:",...(n.tags||[]).map(tag=>`  - ${tag}`),"links:",...(n.links||[]).map(id=>`  - ${(notes.find(x=>x.id===id)||{}).title || id}`),"---","",`# ${n.title}`,"","## 自分のメモ",n.body||""].join("\n");
+  }
+  function formatNote(n,i){ const t=typeInfo(n.type); return [`【星片${i}】${n.title}`,`種類：${t.icon} ${t.label}`,`作成：${n.createdLabel || ""}`,(n.tags||[]).length?`タグ：${(n.tags||[]).map(x=>"#"+x).join(" ")}`:"",(n.links||[]).length?`手動リンク：${(n.links||[]).map(id=>(notes.find(x=>x.id===id)||{}).title).filter(Boolean).join("、")}`:"","",n.body || n.content || ""].filter(Boolean).join("\n"); }
+  function buildSingleSummaryPrompt(n){ return ["以下の星片を要約してください。","","条件：","- 要点を3つ以内で整理","- タグや手動リンクから見えるつながりも短く補足","- 次に考える問いがあれば1つ提案","",formatNote(n,1)].join("\n"); }
+  function buildManyPrompt(target,title){ return [title,"","条件：","- 全体の傾向を短くまとめる","- 重要な星片を最大5つ拾う","- タグや手動リンクから見えるつながりを整理する","- 次に書くとよさそうな星片を提案する","",target.map((n,i)=>formatNote(n,i+1)).join("\n\n---\n\n")].join("\n"); }
+  function isTodayNote(n){ const d=new Date(n.createdAt); if(Number.isNaN(d.getTime())) return false; const now=new Date(); return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate(); }
+
+  async function tryCopyText(text){
+    const value=text||""; if(!value) return false;
+    try{ if(navigator.clipboard?.writeText){ await navigator.clipboard.writeText(value); return true; } }catch{}
+    try{ const ta=document.createElement("textarea"); ta.value=value; ta.style.position="fixed"; ta.style.left="-9999px"; document.body.appendChild(ta); ta.focus(); ta.select(); const ok=document.execCommand("copy"); document.body.removeChild(ta); if(ok) return true; }catch{}
+    return false;
+  }
+  async function copyTextToClipboard(text,msg){ currentCopyText=text||""; const ok=await tryCopyText(currentCopyText); if(ok) toast(msg + " 貼り付けて確認してください。"); else showCopyTextModal(currentCopyText,"自動コピーがブロックされたため、コピー用テキストを表示しました。"); }
+  function showCopyTextModal(text,msg){ currentCopyText=text||""; const area=$("copyTextArea"); area.value=currentCopyText; showModal("copyTextModal"); setTimeout(()=>{ area.focus(); area.select(); },60); if(msg) toast(msg); }
+  async function selectCopyText(){ const area=$("copyTextArea"); currentCopyText=area.value; area.focus(); area.select(); const ok=await tryCopyText(currentCopyText); toast(ok ? "コピーを試しました。" : "手動でコピーしてください。"); }
+  async function shareCopyText(){ if(!currentCopyText) return toast("共有する文章がありません。"); try{ if(navigator.share){ await navigator.share({title:"星図帖", text:currentCopyText}); toast("共有しました。"); } else toast("このブラウザでは共有機能が使えません。"); }catch{ toast("共有をキャンセルしました。"); } }
+  function downloadCopyText(){ if(!currentCopyText) return toast("保存する文章がありません。"); downloadBlob(new Blob([currentCopyText],{type:"text/plain"}),"hoshizucho-text.txt"); toast("TXT保存しました。"); }
+  function exportJSON(){ downloadBlob(new Blob([JSON.stringify({app:"星図帖",version:"1.1",exportedAt:new Date().toISOString(),notes,tagStyles,nodeLayouts},null,2)],{type:"application/json"}),"hoshizucho-v1-backup.json"); toast("星片・タグの見た目・星の配置をJSONへ書き出しました。"); }
+  function exportMarkdownAll(){ downloadBlob(new Blob([notes.map(noteToMarkdown).join("\n\n---\n\n")],{type:"text/markdown"}),"hoshizucho-v1-notes.md"); toast("Markdownを書き出しました。"); }
+  function downloadBlob(blob,filename){ const url=URL.createObjectURL(blob), a=document.createElement("a"); a.href=url; a.download=filename; a.click(); URL.revokeObjectURL(url); }
+  function importJSON(file){
+    if(!file || file.size>MAX_IMPORT_BYTES) return toast("JSONが大きすぎます。30MB以下のバックアップを選んでください。");
+    const reader = new FileReader();
+    reader.onerror = () => toast("JSONファイルを読み込めませんでした。既存データは変更していません。");
+    reader.onload = () => {
+      try{
+        const data=JSON.parse(String(reader.result||"")), legacy=Array.isArray(data), incoming=legacy?data:data?.notes;
+        if(!Array.isArray(incoming) || incoming.length>10000) throw new Error("星片データが見つからないか、件数が多すぎます。");
+        incoming.forEach(validateImportNote);
+        const clean=incoming.map(normalizeNote), existingIds=new Set(notes.map(n=>n.id)), incomingIds=new Set();
+        const hasCollision=clean.some(n=>existingIds.has(n.id)||incomingIds.has(n.id) ? true : (incomingIds.add(n.id),false));
+        if(hasCollision) throw new Error("同じIDの星片があるため、読み込みを中止しました。");
+        const importedStyles=legacy?{}:validateTagStyles(data.tagStyles), importedLayouts=legacy?{}:validateNodeLayouts(data.nodeLayouts);
+        if(!confirm(`${clean.length}件の星片を検証しました。既存データへ追加しますか？`)) return;
+        const nextNotes=[...notes,...clean], nextStyles={...tagStyles,...importedStyles}, nextLayouts={...nodeLayouts,...importedLayouts};
+        commitImportedData(nextNotes,nextStyles,nextLayouts);
+        selectedId=clean[clean.length-1]?.id || null; focusedNodeId=selectedId; initPhysics(false); render(); toast("安全に読み込みました。星の配置も復元しました。");
+      }catch(error){ toast(`${error?.message||"JSONの読み込みに失敗しました。"} 既存データは変更していません。`); }
+    };
+    reader.readAsText(file);
+  }
+  function readFileAsDataURL(file){ return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onerror=()=>reject(new Error("画像ファイルを読み込めませんでした。")); reader.onload=()=>resolve(String(reader.result||"")); reader.readAsDataURL(file); }); }
+  function loadLocalImage(dataUrl){ return new Promise((resolve,reject)=>{ const image=new Image(); image.onload=()=>resolve(image); image.onerror=()=>reject(new Error("この画像形式を表示できません。JPEGまたはPNGをお試しください。")); image.src=dataUrl; }); }
+  function dataUrlBytes(dataUrl){ const comma=dataUrl.indexOf(","); return comma<0 ? dataUrl.length : Math.ceil((dataUrl.length-comma-1)*.75); }
+  async function compressImageFile(file){
+    if(!file?.type?.startsWith("image/") || !SAFE_IMAGE_TYPES.has(file.type.toLowerCase())) throw new Error("JPEG・PNG・WebP・HEICの画像を選んでください。");
+    if(file.size>MAX_IMAGE_SOURCE_BYTES) throw new Error("画像が大きすぎます。24MB以下の写真を選んでください。");
+    const original=await readFileAsDataURL(file), image=await loadLocalImage(original), longest=Math.max(image.naturalWidth,image.naturalHeight);
+    if(longest<=MAX_IMAGE_EDGE && dataUrlBytes(original)<=MAX_IMAGE_STORED_BYTES) return original;
+    let edge=Math.min(MAX_IMAGE_EDGE,longest), quality=.84, result="";
+    for(let attempt=0;attempt<7;attempt++){
+      const scale=Math.min(1,edge/longest), width=Math.max(1,Math.round(image.naturalWidth*scale)), height=Math.max(1,Math.round(image.naturalHeight*scale));
+      const work=document.createElement("canvas"); work.width=width; work.height=height;
+      const workCtx=work.getContext("2d",{alpha:false}); if(!workCtx) throw new Error("画像を処理できませんでした。");
+      workCtx.fillStyle="#111218"; workCtx.fillRect(0,0,width,height); workCtx.drawImage(image,0,0,width,height);
+      result=work.toDataURL("image/jpeg",quality);
+      if(dataUrlBytes(result)<=MAX_IMAGE_STORED_BYTES) return result;
+      edge=Math.max(720,Math.round(edge*.84)); quality=Math.max(.52,quality-.06);
+    }
+    throw new Error("画像を保存可能な容量まで小さくできませんでした。別の写真を選んでください。");
+  }
+  async function handleImage(file){
+    if(!file) return;
+    toast("画像を端末内で縮小しています…");
+    try{ attachedImage=await compressImageFile(file); $("imagePreviewImg").src=attachedImage; $("imagePreview").classList.add("show"); toast("画像を縮小して添付しました。外部には送信していません。"); }
+    catch(error){ $("imageInput").value=""; toast(error?.message||"画像を処理できませんでした。"); }
+  }
+  function clearImage(withToast=true){ attachedImage=""; $("imageInput").value=""; $("imagePreviewImg").removeAttribute("src"); $("imagePreview").classList.remove("show"); if(withToast) toast("画像を外しました。"); }
+  function shakeGraph(){ clearNodeLayouts(); for(const id of Object.keys(physics)){ physics[id].x=size.w/2+(Math.random()-.5)*size.w*.62; physics[id].y=size.h/2+(Math.random()-.5)*size.h*.62; physics[id].vx=0; physics[id].vy=0; physics[id].pinned=false; } graphLabelLayout=new Map(); graphLabelLayoutAt=0; wakePhysics(); toast("固定位置を解除して再配置しました。"); }
+  function modalFocusable(modal){ return [...modal.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(el=>!el.disabled && !el.hidden); }
+  function showModal(id){
+    const modal=$(id); if(!modal) return;
+    modalReturnFocus=document.activeElement instanceof HTMLElement?document.activeElement:null; activeModalId=id; modal.classList.add("show"); modal.setAttribute("aria-hidden","false");
+    const targets=modalFocusable(modal); setTimeout(()=>{ (targets[0]||modal.querySelector(".modal"))?.focus(); },0);
+  }
+  function closeModal(id,returnFocus=true){
+    const modal=$(id); if(!modal) return;
+    modal.classList.remove("show"); modal.setAttribute("aria-hidden","true"); if(activeModalId===id) activeModalId=null;
+    const target=modalReturnFocus; modalReturnFocus=null; if(returnFocus && target?.isConnected) setTimeout(()=>target.focus(),0);
+  }
+  function handleGlobalKeydown(e){
+    if(activeModalId){
+      const modal=$(activeModalId);
+      if(e.key==="Escape"){ e.preventDefault(); closeModal(activeModalId); return; }
+      if(e.key==="Tab"){
+        const targets=modalFocusable(modal); if(!targets.length){ e.preventDefault(); modal.querySelector(".modal")?.focus(); return; }
+        const first=targets[0],last=targets[targets.length-1];
+        if(!modal.contains(document.activeElement)){ e.preventDefault(); first.focus(); }
+        else if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+        else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+      }
+      return;
+    }
+    if(e.key==="Escape" && document.body.classList.contains("desktop-compose-open")) closeDesktopComposer(true);
+  }
+  function toast(msg){ const el=$("toast"); el.textContent=msg; el.classList.add("show"); clearTimeout(window.__toast); window.__toast=setTimeout(()=>el.classList.remove("show"),2300); }
+
+  function bindEvents(){
+    document.querySelectorAll(".modal-bg").forEach(modal=>modal.setAttribute("aria-hidden","true"));
+    $("addBtn").onclick = addNote;
+    $("highlightBodyBtn").onmousedown = e => e.preventDefault();
+    $("highlightBodyBtn").onclick = () => toggleHighlight("bodyInput");
+    $("desktopComposeBtn").onclick = openDesktopComposer;
+    $("desktopComposeCloseBtn").onclick = () => closeDesktopComposer(true);
+    $("desktopComposeBackdrop").onclick = () => closeDesktopComposer(true);
+    const mobileComposeBtn = $("mobileComposeBtn"), mobileMemoryBtn = $("mobileMemoryBtn");
+    if(mobileComposeBtn) mobileComposeBtn.onclick = () => setMobileSheet(document.body.classList.contains("mobile-sheet-compose") ? null : "compose");
+    if(mobileMemoryBtn) mobileMemoryBtn.onclick = () => setMobileSheet(document.body.classList.contains("mobile-sheet-memory") ? null : "memory");
+    $("helpBtn").onclick = () => showModal("helpModal"); $("closeHelpBtn").onclick = () => closeModal("helpModal"); $("helpModal").onclick = e => { if(e.target.id === "helpModal") closeModal("helpModal"); };
+    $("clearBtn").onclick = () => showModal("confirmModal"); $("cancelClearBtn").onclick = () => closeModal("confirmModal"); $("doClearBtn").onclick = clearAll; $("confirmModal").onclick = e => { if(e.target.id === "confirmModal") closeModal("confirmModal"); };
+    $("cancelDeleteNoteBtn").onclick = () => { pendingDeleteId=null; closeModal("deleteNoteModal"); }; $("confirmDeleteNoteBtn").onclick = forceDelete; $("deleteNoteModal").onclick = e => { if(e.target.id === "deleteNoteModal"){ pendingDeleteId=null; closeModal("deleteNoteModal"); } };
+    $("selectCopyTextBtn").onclick = selectCopyText; $("shareCopyTextBtn").onclick = shareCopyText; $("downloadCopyTextBtn").onclick = downloadCopyText; $("closeCopyTextBtn").onclick = () => closeModal("copyTextModal"); $("copyTextModal").onclick = e => { if(e.target.id === "copyTextModal") closeModal("copyTextModal"); };
+    $("exportBtn").onclick = () => confirm("JSONでバックアップしますか？\n\nOK：JSON\nキャンセル：Markdown") ? exportJSON() : exportMarkdownAll();
+    $("importBtn").onclick = () => $("importFile").click(); $("importFile").onchange = e => { const file=e.target.files[0]; if(file) importJSON(file); e.target.value=""; };
+    $("imageBtn").onclick = () => $("imageInput").click(); $("imageInput").onchange = e => handleImage(e.target.files[0]); $("removeImageBtn").onclick = () => clearImage(true);
+    $("searchInput").oninput = () => { listPage=0; render(); }; $("filterType").onchange = () => { listPage=0; render(); }; $("clearSearchBtn").onclick = () => { $("searchInput").value=""; $("filterType").value="all"; listPage=0; render(); }; $("prevPageBtn").onclick = () => { listPage=Math.max(0,listPage-1); render(); }; $("nextPageBtn").onclick = () => { listPage=listPage+1; render(); };
+    $("graphTagFilter").onchange = e => setGraphTagFilter(e.target.value);
+    $("shakeBtn").onclick = shakeGraph; $("zoomOutBtn").onclick = () => setZoom(view.scale/1.2); $("zoomInBtn").onclick = () => setZoom(view.scale*1.2); $("resetViewBtn").onclick = resetView;
+    canvas.addEventListener("mousedown", onDown); canvas.addEventListener("mousemove", onMove);
+  canvas.addEventListener("mouseleave", () => { hoveredNodeId = null; canvas.style.cursor = "default"; requestCanvasFrame(); }); canvas.addEventListener("wheel", onWheel, {passive:false}); window.addEventListener("mouseup", onUp);
+    canvas.addEventListener("touchstart", onDown, {passive:false}); canvas.addEventListener("touchmove", onMove, {passive:false}); window.addEventListener("touchend", onUp); window.addEventListener("touchcancel", onCancel);
+    window.addEventListener("resize", () => { resize(); if(!isMobileUX()) setMobileSheet(null); if(!isDesktopComposerUX()) closeDesktopComposer(); });
+    document.addEventListener("keydown", handleGlobalKeydown);
+    document.addEventListener("focusin", e => { if(isTextEntry(e.target)) scheduleMobileKeyboardViewport(); });
+    document.addEventListener("focusout", () => setTimeout(syncMobileKeyboardViewport,320));
+    if(window.visualViewport){
+      window.visualViewport.addEventListener("resize", syncMobileKeyboardViewport);
+      window.visualViewport.addEventListener("scroll", syncMobileKeyboardViewport);
+    }
+    document.addEventListener("visibilitychange", () => { if(document.hidden) stopCanvasScheduling(); else resumeCanvasAfterComposer(); });
+  }
+
+  setupTypes(); bindEvents(); resize(); initPhysics(false); render(); requestCanvasFrame(); updateZoomLabel();
+  if(storageLoadFailed) setTimeout(()=>toast("保存データを読み込めなかったため、上書きを停止しています。"),0);
+})();
+</script>
+</body>
+</html>
