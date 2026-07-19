@@ -1121,6 +1121,7 @@
   let dragStarted = false;
   let dragOrigin = null;
   let pointerIsTouch = false;
+  let activeTouchId = null;
   let pendingDeleteId = null;
   let currentCopyText = "";
   const LIST_PAGE_SIZE = 4;
@@ -1602,14 +1603,14 @@
     const radius = Math.min(w,h) * (tags.length <= 1 ? 0 : 0.30);
     tags.forEach((node,index) => {
       const saved=nodeLayouts[node.id];
-      if(saved){ physics[node.id]={x:clamp(saved.x*w,68,w-68),y:clamp(saved.y*h,56,h-56),vx:0,vy:0,pinned:true}; return; }
+      if(saved){ if(draggingId===node.id && physics[node.id]) return; physics[node.id]={x:clamp(saved.x*w,68,w-68),y:clamp(saved.y*h,56,h-56),vx:0,vy:0,pinned:true}; return; }
       if(physics[node.id]) return;
       const angle = -Math.PI/2 + (Math.PI*2*index) / Math.max(tags.length,1);
       physics[node.id] = { x:w/2 + Math.cos(angle)*radius, y:h/2 + Math.sin(angle)*radius, vx:0, vy:0 };
     });
     notesNodes.forEach(node => {
       const saved=nodeLayouts[node.id];
-      if(saved){ physics[node.id]={x:clamp(saved.x*w,42,w-42),y:clamp(saved.y*h,56,h-56),vx:0,vy:0,pinned:true}; return; }
+      if(saved){ if(draggingId===node.id && physics[node.id]) return; physics[node.id]={x:clamp(saved.x*w,42,w-42),y:clamp(saved.y*h,56,h-56),vx:0,vy:0,pinned:true}; return; }
       if(physics[node.id]) return;
       const parentEdge = graph.edges.find(e => e.target === node.id && e.type === "tag");
       const parent = parentEdge && physics[parentEdge.source] ? physics[parentEdge.source] : { x:w/2, y:h/2 };
@@ -1957,8 +1958,22 @@
     for(const node of ordered){ const p=physics[node.id], r=Math.max(node.type === "tag" ? 26 : 17,minRadius); if(p && Math.hypot(p.x-x,p.y-y)<r) return node.id; }
     return null;
   }
-  function getPointerPos(e){ const rect=canvas.getBoundingClientRect(); const pt=e.touches?.[0] || e.changedTouches?.[0] || e; return {x:pt.clientX-rect.left, y:pt.clientY-rect.top}; }
+  function getPointerPos(e){
+    const rect=canvas.getBoundingClientRect(), lists=[e.touches,e.changedTouches].filter(Boolean);
+    let pt=null;
+    if(activeTouchId!==null){
+      for(const list of lists){ for(let i=0;i<list.length;i++){ if(list[i].identifier===activeTouchId){ pt=list[i]; break; } } if(pt) break; }
+    }
+    if(!pt){ for(const list of lists){ if(list.length){ pt=list[0]; break; } } }
+    pt=pt||e;
+    return {x:pt.clientX-rect.left, y:pt.clientY-rect.top};
+  }
   function screenToWorld(pos){ return {x:(pos.x-view.x)/view.scale, y:(pos.y-view.y)/view.scale}; }
+  function moveDraggedNode(screen){
+    const p=draggingId ? physics[draggingId] : null; if(!p || !screen) return false;
+    const world=screenToWorld(screen); p.x=world.x; p.y=world.y; p.vx=0; p.vy=0;
+    return true;
+  }
   function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
   function updateZoomLabel(){ $("zoomLevel").textContent = `${Math.round(view.scale*100)}%`; }
   function setZoom(next, center={x:size.w/2,y:size.h/2}){ const scale=clamp(next,VIEW_MIN,VIEW_MAX); const world=screenToWorld(center); view.scale=scale; view.x=center.x-world.x*scale; view.y=center.y-world.y*scale; updateZoomLabel(); lastFrameTime=0; requestCanvasFrame(); }
@@ -1966,13 +1981,13 @@
   function touchMidpointAndDistance(touches){ const rect=canvas.getBoundingClientRect(), a=touches[0], b=touches[1]; return { midpoint:{x:(a.clientX+b.clientX)/2-rect.left, y:(a.clientY+b.clientY)/2-rect.top}, distance:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY) }; }
   function resetPointerGesture(restoreDragged=false){
     if(restoreDragged && draggingId && dragOrigin && physics[draggingId]) Object.assign(physics[draggingId],dragOrigin);
-    draggingId=null; downPos=null; panning=false; panStart=null; dragStarted=false; dragOrigin=null; pointerIsTouch=false; canvas.style.cursor="default"; lastFrameTime=0; requestCanvasFrame();
+    draggingId=null; downPos=null; panning=false; panStart=null; dragStarted=false; dragOrigin=null; pointerIsTouch=false; activeTouchId=null; canvas.style.cursor="default"; lastFrameTime=0; requestCanvasFrame();
   }
   function onDown(e){
     requestCanvasFrame();
     if(e.touches?.length===2){ if(draggingId&&dragOrigin&&physics[draggingId]) Object.assign(physics[draggingId],dragOrigin); const g=touchMidpointAndDistance(e.touches); pinchStart={distance:g.distance,scale:view.scale,world:screenToWorld(g.midpoint)}; resetPointerGesture(false); requestCanvasFrame(); e.preventDefault();return; }
     const screen=getPointerPos(e), world=screenToWorld(screen), minTouchRadius=e.touches ? 22/view.scale : 0, id=findNode(world.x,world.y,minTouchRadius); downPos=screen;
-    pointerIsTouch=!!e.touches; dragStarted=false;
+    pointerIsTouch=!!e.touches; activeTouchId=pointerIsTouch ? (e.touches[0]?.identifier ?? null) : null; dragStarted=false;
     if(id){ draggingId=id; dragOrigin=physics[id]?{x:physics[id].x,y:physics[id].y,vx:physics[id].vx,vy:physics[id].vy,pinned:physics[id].pinned}:null; panning=false; } else { draggingId=null; dragOrigin=null; panning=true; panStart={x:screen.x,y:screen.y,viewX:view.x,viewY:view.y}; }
     e.preventDefault();
   }
@@ -1987,17 +2002,29 @@
       const moved=downPos?Math.hypot(screen.x-downPos.x,screen.y-downPos.y):0, threshold=pointerIsTouch?12:5;
       if(!dragStarted && moved<threshold){ e.preventDefault(); return; }
       if(!dragStarted){ dragStarted=true; wakePhysics(); }
-      const world=screenToWorld(screen), p=physics[draggingId]; if(p){ p.x=world.x; p.y=world.y; p.vx=0; p.vy=0; } canvas.style.cursor="grabbing"; lastFrameTime=0; requestCanvasFrame(); e.preventDefault();
+      moveDraggedNode(screen); canvas.style.cursor="grabbing"; lastFrameTime=0; requestCanvasFrame(); e.preventDefault();
     }
     else if(panning && panStart){ view.x=panStart.viewX+screen.x-panStart.x; view.y=panStart.viewY+screen.y-panStart.y; canvas.style.cursor="grabbing"; lastFrameTime=0; requestCanvasFrame(); e.preventDefault(); }
   }
   function onUp(e){
     if(pinchStart){ pinchStart=null; resetPointerGesture(false); return; }
-    if(draggingId && downPos){ if(!dragStarted){ const node=buildGraph().nodes.find(n=>n.id===draggingId); focusedNodeId=draggingId; selectedId = node?.type === "note" ? node.noteId : null; render(); } else if(pinNodePosition(draggingId)){ toast("星の位置を保存しました。"); } }
+    if(draggingId && downPos){
+      if(!dragStarted){ const node=buildGraph().nodes.find(n=>n.id===draggingId); focusedNodeId=draggingId; selectedId = node?.type === "note" ? node.noteId : null; render(); }
+      else{ moveDraggedNode(getPointerPos(e)); if(pinNodePosition(draggingId)) toast("星の位置を保存しました。"); }
+    }
     else if(panning && downPos){ const pos=getPointerPos(e), moved=Math.hypot(pos.x-downPos.x,pos.y-downPos.y), threshold=pointerIsTouch?12:5; if(moved<threshold && (selectedId || focusedNodeId)){ selectedId=null; focusedNodeId=null; render(); } }
     resetPointerGesture(false);
   }
-  function onCancel(){ pinchStart=null; resetPointerGesture(true); }
+  function onCancel(e){
+    pinchStart=null;
+    if(draggingId && dragStarted){
+      if(e?.changedTouches?.length) moveDraggedNode(getPointerPos(e));
+      if(pinNodePosition(draggingId)) toast("タッチが中断されたため、最後の位置を保存しました。");
+      resetPointerGesture(false);
+      return;
+    }
+    resetPointerGesture(true);
+  }
   function onWheel(e){ e.preventDefault(); setZoom(view.scale*(e.deltaY<0?1.12:.89), getPointerPos(e)); }
 
   function getFilteredNotes(){
