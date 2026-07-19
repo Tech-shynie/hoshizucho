@@ -1708,18 +1708,18 @@
       const targetColor = nodeById.get(e.target)?.color || COLOR.gold2;
       const lineColor = e.type === "manual" ? COLOR.manual : (isSel ? blendColors(sourceColor, targetColor) : COLOR.edge);
       const lineAlpha = e.type === "manual"
-        ? (isSel ? .88 : (hasFocus ? .14 : (useReadableDesktopGraph ? .46 : .40)))
-        : (isSel ? .82 : (hasFocus ? .10 : (useReadableDesktopGraph ? .34 : .25)));
+        ? (isSel ? .88 : (hasFocus ? .22 : (useReadableDesktopGraph ? .60 : .54)))
+        : (isSel ? .82 : (hasFocus ? .18 : (useReadableDesktopGraph ? .50 : .44)));
       const grad = ctx.createLinearGradient(a.x,a.y,b.x,b.y);
-      grad.addColorStop(0, colorToRgba(lineColor, lineAlpha * 1.04));
-      grad.addColorStop(.46, colorToRgba(lineColor, lineAlpha * (useReadableDesktopGraph ? .52 : .40)));
-      grad.addColorStop(.54, colorToRgba(lineColor, lineAlpha * (useReadableDesktopGraph ? .52 : .40)));
-      grad.addColorStop(1, colorToRgba(lineColor, lineAlpha * .96));
+      grad.addColorStop(0, colorToRgba(lineColor, lineAlpha * 1.02));
+      grad.addColorStop(.46, colorToRgba(lineColor, lineAlpha * (useReadableDesktopGraph ? .72 : .64)));
+      grad.addColorStop(.54, colorToRgba(lineColor, lineAlpha * (useReadableDesktopGraph ? .72 : .64)));
+      grad.addColorStop(1, colorToRgba(lineColor, lineAlpha * .98));
       ctx.save(); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.lineCap="round"; ctx.lineJoin="round";
       ctx.strokeStyle = grad;
       ctx.lineWidth = e.type === "manual"
-        ? (isSel ? 2.9 : (useReadableDesktopGraph ? 1.5 : 1.4))
-        : (isSel ? 2.55 : (useReadableDesktopGraph ? 1.1 : .95));
+        ? (isSel ? 2.9 : (useReadableDesktopGraph ? 1.8 : 1.65))
+        : (isSel ? 2.55 : (useReadableDesktopGraph ? 1.4 : 1.25));
       if(isSel){ ctx.shadowBlur = 8; ctx.shadowColor = colorToRgba(lineColor,.42); }
       if(e.type === "manual") ctx.setLineDash([5,5]);
       ctx.stroke(); ctx.restore();
