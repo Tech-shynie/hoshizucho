@@ -2079,11 +2079,25 @@
     });
   }
   function render(){ renderCounts(); renderList(); renderDetail(); lastFrameTime=0; requestCanvasFrame(); }
+  let detailScrollResetToken=0;
   function resetDetailScroll(detail){
     if(!detail) return;
-    const reset=()=>{ detail.scrollTop=0; detail.scrollLeft=0; };
+    const token=++detailScrollResetToken;
+    const reset=()=>{
+      if(token!==detailScrollResetToken) return;
+      detail.scrollTop=0;
+      detail.scrollLeft=0;
+      if(detail.scrollTo) detail.scrollTo({top:0,left:0,behavior:"auto"});
+    };
+    const cancel=()=>{ if(token===detailScrollResetToken) detailScrollResetToken++; };
+    detail.onpointerdown=cancel;
+    detail.onwheel=cancel;
     reset();
     requestAnimationFrame(()=>{ reset(); requestAnimationFrame(reset); });
+    if(isStandaloneMode()){
+      setTimeout(reset,80);
+      setTimeout(reset,220);
+    }
   }
   function availableGraphTags(){ return [...new Set(notes.flatMap(n=>(n.tags||[]).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,"ja")); }
   function renderGraphTagFilter(){
@@ -2151,7 +2165,7 @@
       detail.hidden = true; detail.innerHTML = ""; return;
     }
     tagDetailKey=""; tagDetailPage=0;
-    detail.hidden = false;
+    detail.hidden = true;
     const t = typeInfo(n.type);
     const candidates = notes.filter(x=>x.id!==n.id);
     const linked = (n.links || []).map(id => notes.find(x=>x.id===id)).filter(Boolean);
@@ -2196,6 +2210,7 @@
       </div>
       <div class="section"><div class="section-label">ChatGPTで振り返る</div><div class="link-tools"><button id="copySummaryPromptBtn">この星片を要約用にコピー</button><button id="copyTodaySummaryPromptBtn">今日の星片をコピー</button><button id="copyAllSummaryPromptBtn">全星片をコピー</button></div></div>
       <div class="hint" style="margin-top:10px;">作成：${escapeHtml(n.createdLabel || "")} / 更新：${escapeHtml(n.updatedAt ? new Date(n.updatedAt).toLocaleString("ja-JP") : "")}</div>`;
+    detail.hidden = false;
     resetDetailScroll(detail);
     let pendingEditImageData=n.imageData || "";
     const setEditImagePreview=value=>{ pendingEditImageData=value||""; const preview=$("editImagePreview"), image=$("editImagePreviewImg"); if(pendingEditImageData){ image.src=pendingEditImageData; preview.classList.add("show"); }else{ image.removeAttribute("src"); preview.classList.remove("show"); } };
@@ -2234,7 +2249,7 @@
     $("copyAllSummaryPromptBtn").onclick = () => copyTextToClipboard(buildManyPrompt(notes,"以下は星図帖に保存した全星片です。つながりが見えるように要約してください。"), "全星片をコピーしました。");
   }
   function renderTagDetail(node){
-    const detail = $("detail"); detail.hidden = false;
+    const detail = $("detail"); detail.hidden = true;
     const tag = node.label;
     const style = tagStyles[graphKey(tag)] || {};
     const starColor = style.starColor || node.color || colorForTag(tag);
@@ -2264,6 +2279,7 @@
         <div class="edit-actions"><button id="cancelTagEditBtn">キャンセル</button><button class="primary" id="saveTagEditBtn">保存する</button></div>
       </div>`:`<div class="hint" style="margin-top:10px;">「未分類」は自動で作られるタグ星です。</div>`}
       <div class="section"><div class="section-label">このタグにつながる星片（${related.length}件）</div>${related.length ? pageItems.map(n=>`<div class="note-card" tabindex="0" role="button" data-id="${escapeHtml(n.id)}" style="margin-top:8px;border-left-color:${escapeHtml(n.starColor||typeInfo(n.type).color)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}">${escapeHtml(typeInfo(n.type).icon)} ${escapeHtml(n.title)}</div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div></div>`).join("") : `<div class="hint">星片がありません。</div>`}${totalPages>1?`<div class="tag-detail-pager"><button class="pager-button ghost" id="prevTagDetailPageBtn" type="button" aria-label="前の関連星片ページ" ${tagDetailPage===0?"disabled":""}>‹</button><div class="pager-status">第${tagDetailPage+1}星域 / ${totalPages}（全${related.length}件）</div><button class="pager-button ghost" id="nextTagDetailPageBtn" type="button" aria-label="次の関連星片ページ" ${tagDetailPage>=totalPages-1?"disabled":""}>›</button></div>`:""}</div>`;
+    detail.hidden = false;
     resetDetailScroll(detail);
     $("closeDetailBtn").onclick = () => { tagDetailKey=""; tagDetailPage=0; selectedId=null; focusedNodeId=null; render(); };
     if(editable){
@@ -2583,7 +2599,15 @@
       window.visualViewport.addEventListener("resize", syncMobileKeyboardViewport);
       window.visualViewport.addEventListener("scroll", syncMobileKeyboardViewport);
     }
-    document.addEventListener("visibilitychange", () => { if(document.hidden) stopCanvasScheduling(); else resumeCanvasAfterComposer(); });
+    window.addEventListener("pageshow",()=>{ const detail=$("detail"); if(isStandaloneMode() && detail && !detail.hidden) resetDetailScroll(detail); });
+    document.addEventListener("visibilitychange", () => {
+      if(document.hidden) stopCanvasScheduling();
+      else{
+        resumeCanvasAfterComposer();
+        const detail=$("detail");
+        if(isStandaloneMode() && detail && !detail.hidden) resetDetailScroll(detail);
+      }
+    });
   }
 
   setupTypes(); const draftRestored=restoreDraft(); bindEvents(); resize(); initPhysics(false); fitViewToSavedLayouts(); render(); requestCanvasFrame(); updateZoomLabel();
