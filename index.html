@@ -579,6 +579,7 @@
       padding:19px;
       border-color:rgba(236,232,222,.125);
       box-shadow:0 31px 94px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.072),inset 0 -1px 0 rgba(255,255,255,.026);
+      overflow-anchor:none;
     }
     .detail-head{gap:12px;margin-bottom:1px}
     .detail-actions{gap:8px}
@@ -2078,6 +2079,12 @@
     });
   }
   function render(){ renderCounts(); renderList(); renderDetail(); lastFrameTime=0; requestCanvasFrame(); }
+  function resetDetailScroll(detail){
+    if(!detail) return;
+    const reset=()=>{ detail.scrollTop=0; detail.scrollLeft=0; };
+    reset();
+    requestAnimationFrame(()=>{ reset(); requestAnimationFrame(reset); });
+  }
   function availableGraphTags(){ return [...new Set(notes.flatMap(n=>(n.tags||[]).filter(Boolean)))].sort((a,b)=>a.localeCompare(b,"ja")); }
   function renderGraphTagFilter(){
     const select=$("graphTagFilter"); if(!select) return;
@@ -2189,7 +2196,7 @@
       </div>
       <div class="section"><div class="section-label">ChatGPTで振り返る</div><div class="link-tools"><button id="copySummaryPromptBtn">この星片を要約用にコピー</button><button id="copyTodaySummaryPromptBtn">今日の星片をコピー</button><button id="copyAllSummaryPromptBtn">全星片をコピー</button></div></div>
       <div class="hint" style="margin-top:10px;">作成：${escapeHtml(n.createdLabel || "")} / 更新：${escapeHtml(n.updatedAt ? new Date(n.updatedAt).toLocaleString("ja-JP") : "")}</div>`;
-    detail.scrollTop=0;
+    resetDetailScroll(detail);
     let pendingEditImageData=n.imageData || "";
     const setEditImagePreview=value=>{ pendingEditImageData=value||""; const preview=$("editImagePreview"), image=$("editImagePreviewImg"); if(pendingEditImageData){ image.src=pendingEditImageData; preview.classList.add("show"); }else{ image.removeAttribute("src"); preview.classList.remove("show"); } };
     const openEditor = (focus="editTitleInput") => { $("editTools").hidden = false; const target=$(focus); if(target){ target.focus(); if(target.setSelectionRange) target.setSelectionRange(target.value.length,target.value.length); } $("editTools").scrollIntoView({behavior:"smooth",block:"start"}); };
@@ -2257,7 +2264,7 @@
         <div class="edit-actions"><button id="cancelTagEditBtn">キャンセル</button><button class="primary" id="saveTagEditBtn">保存する</button></div>
       </div>`:`<div class="hint" style="margin-top:10px;">「未分類」は自動で作られるタグ星です。</div>`}
       <div class="section"><div class="section-label">このタグにつながる星片（${related.length}件）</div>${related.length ? pageItems.map(n=>`<div class="note-card" tabindex="0" role="button" data-id="${escapeHtml(n.id)}" style="margin-top:8px;border-left-color:${escapeHtml(n.starColor||typeInfo(n.type).color)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}">${escapeHtml(typeInfo(n.type).icon)} ${escapeHtml(n.title)}</div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div></div>`).join("") : `<div class="hint">星片がありません。</div>`}${totalPages>1?`<div class="tag-detail-pager"><button class="pager-button ghost" id="prevTagDetailPageBtn" type="button" aria-label="前の関連星片ページ" ${tagDetailPage===0?"disabled":""}>‹</button><div class="pager-status">第${tagDetailPage+1}星域 / ${totalPages}（全${related.length}件）</div><button class="pager-button ghost" id="nextTagDetailPageBtn" type="button" aria-label="次の関連星片ページ" ${tagDetailPage>=totalPages-1?"disabled":""}>›</button></div>`:""}</div>`;
-    detail.scrollTop=0;
+    resetDetailScroll(detail);
     $("closeDetailBtn").onclick = () => { tagDetailKey=""; tagDetailPage=0; selectedId=null; focusedNodeId=null; render(); };
     if(editable){
       $("filterTagBtn").onclick = () => setGraphTagFilter(activeGraphTag===tag ? "" : tag);
