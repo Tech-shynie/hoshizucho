@@ -474,6 +474,42 @@
       padding:12px;
       background:rgba(12,14,20,.28);
     }
+    .detail-appearance-preview{
+      min-height:108px;
+      margin:10px 0 4px;
+      padding:14px;
+      display:grid;
+      place-items:center;
+      align-content:center;
+      gap:12px;
+      overflow:hidden;
+      border:1px solid rgba(236,232,222,.07);
+      border-radius:14px;
+      background:radial-gradient(circle at center,rgba(201,162,74,.07),transparent 58%),#0B0E15;
+    }
+    .detail-appearance-preview-star{
+      position:relative;
+      width:15px;
+      height:15px;
+      border-radius:999px;
+      background:currentColor;
+      box-shadow:0 0 7px currentColor,0 0 20px currentColor;
+    }
+    .detail-appearance-preview-star::after{
+      content:"";
+      position:absolute;
+      inset:5px;
+      border-radius:999px;
+      background:#FFFDF5;
+    }
+    .detail-appearance-preview-title{
+      max-width:min(100%,260px);
+      font-size:12px;
+      line-height:1.5;
+      font-weight:600;
+      text-align:center;
+      overflow-wrap:anywhere;
+    }
     .appearance-row{
       display:grid;
       grid-template-columns:minmax(118px,.58fr) 1fr;
@@ -2327,6 +2363,10 @@
       <div class="section"><div class="section-label">自分のメモ</div><div class="markdown" id="bodyView">${renderMarkdown(n.body || n.raw || n.content)}</div>${n.imageData ? `<img class="detail-image" src="${escapeHtml(n.imageData)}" alt="添付画像" />` : ""}</div>
       <div class="appearance-editor" style="margin-top:13px;">
         <label>見た目</label>
+        <div class="detail-appearance-preview" role="img" aria-label="星図上での記事の見え方">
+          <span class="detail-appearance-preview-star" id="detailAppearancePreviewStar" style="color:${escapeHtml(n.starColor||t.color)}"></span>
+          <span class="detail-appearance-preview-title" id="detailAppearancePreviewTitle" style="color:${escapeHtml(n.textColor||COLOR.text)}">${escapeHtml(n.title)}</span>
+        </div>
         <div class="appearance-row">
           <div class="appearance-row-label"><span>✦</span><div><strong>星の色</strong><small>星図上の星と左端の光の色を変えます</small></div></div>
           <div class="swatch-row">
@@ -2553,6 +2593,9 @@
 
     const titleEl = document.querySelector('[data-detail-title]');
     if(titleEl && safeField === "textColor") titleEl.style.color = color;
+    const previewStar = $("detailAppearancePreviewStar"), previewTitle = $("detailAppearancePreviewTitle");
+    if(previewStar && safeField === "starColor") previewStar.style.color = color;
+    if(previewTitle && safeField === "textColor") previewTitle.style.color = color;
 
     document.querySelectorAll(`.swatchBtn[data-field="${safeField}"][data-color]`).forEach(btn => {
       btn.style.borderColor = String(btn.dataset.color).toLowerCase() === String(color).toLowerCase() ? "#fff" : "rgba(255,255,255,.18)";
