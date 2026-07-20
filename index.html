@@ -845,6 +845,22 @@
         max-height:calc(var(--mobile-visual-height,100dvh) - 142px)!important;
         scroll-padding-bottom:18px;
       }
+      /* Keep the compose sheet anchored to Safari's visible viewport while typing. */
+      body.mobile-keyboard-open.mobile-sheet-compose .side{
+        top:calc(var(--mobile-visual-top,0px) + env(safe-area-inset-top) + 10px);
+        bottom:auto;
+        height:calc(var(--mobile-visual-height,100dvh) - env(safe-area-inset-top) - 20px);
+        max-height:none!important;
+      }
+      body.mobile-keyboard-open.mobile-sheet-compose .side .panel:first-child{
+        height:100%;
+        max-height:none!important;
+      }
+      body.mobile-keyboard-open.mobile-sheet-compose .side .panel:first-child .panel-body{
+        flex:1 1 auto;
+        min-height:0;
+        max-height:none!important;
+      }
     }
 
     /* iPhone: 記憶パネル全体を1つの縦スクロール領域として扱う。 */
@@ -1428,6 +1444,7 @@
     document.body.classList.remove("mobile-keyboard-open");
     document.documentElement.style.removeProperty("--mobile-visual-height");
     document.documentElement.style.removeProperty("--mobile-keyboard-inset");
+    document.documentElement.style.removeProperty("--mobile-visual-top");
   }
   function syncMobileKeyboardViewport(){
     const vv=window.visualViewport, active=document.activeElement;
@@ -1441,6 +1458,7 @@
     const keyboardInset=Math.max(0,window.innerHeight-vv.height-vv.offsetTop);
     document.documentElement.style.setProperty("--mobile-visual-height",`${visualHeight}px`);
     document.documentElement.style.setProperty("--mobile-keyboard-inset",`${keyboardInset}px`);
+    document.documentElement.style.setProperty("--mobile-visual-top",`${Math.max(0,vv.offsetTop)}px`);
     document.body.classList.add("mobile-keyboard-open");
   }
   function scheduleMobileKeyboardViewport(){
