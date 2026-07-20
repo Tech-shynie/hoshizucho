@@ -1941,13 +1941,13 @@
         ctx.beginPath(); ctx.arc(p.x,p.y,r*2.18,0,Math.PI*2); ctx.stroke();
         ctx.restore();
       }else{
-        const inner = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*2.55);
+        const inner = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*3.05);
         inner.addColorStop(0, hexToRgba("#ffffff", Math.min(1, (.94 + hover*.04 + (isSel ? .04 : 0)) * trait.core)));
         inner.addColorStop(.18, hexToRgba("#ffffff", Math.min(.68, (.48 + hover*.07 + breath*.08) * trait.core)));
         inner.addColorStop(.44, hexToRgba(starColor, Math.min(.94, .80 * light)));
         inner.addColorStop(1, hexToRgba(starColor,0));
-        ctx.fillStyle = inner; ctx.beginPath(); ctx.arc(p.x,p.y,r*2.55,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = hexToRgba(starColor, Math.min(.92, .78 * light)); ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = inner; traceFourPointStar(ctx,p.x,p.y,r*3.05,r*2.25,r*.52); ctx.fill();
+        ctx.fillStyle = hexToRgba(starColor, Math.min(.92, .78 * light)); traceFourPointStar(ctx,p.x,p.y,r*2.35,r*1.72,r*.43); ctx.fill();
         ctx.fillStyle = hexToRgba("#ffffff", Math.min(.82, (.52 + hover*.12 + breath*.10) * trait.core)); ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(1.05,r*.20),0,Math.PI*2); ctx.fill();
       }
       ctx.globalAlpha = 1;
@@ -2086,6 +2086,12 @@
       const px=x+Math.cos(angle)*radius, py=y+Math.sin(angle)*radius;
       if(i===0) context.moveTo(px,py); else context.lineTo(px,py);
     }
+    context.closePath();
+  }
+  function traceFourPointStar(context,x,y,verticalRadius,horizontalRadius,innerRadius){
+    const points=[[0,-verticalRadius],[innerRadius,-innerRadius],[horizontalRadius,0],[innerRadius,innerRadius],[0,verticalRadius],[-innerRadius,innerRadius],[-horizontalRadius,0],[-innerRadius,-innerRadius]];
+    context.beginPath();
+    points.forEach(([dx,dy],index)=>{ if(index===0) context.moveTo(x+dx,y+dy); else context.lineTo(x+dx,y+dy); });
     context.closePath();
   }
   function colorToRgba(color,alpha){
