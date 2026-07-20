@@ -1006,9 +1006,67 @@
     .graph-access-list button{white-space:normal;text-align:left;font-size:11px;padding:6px 8px}
     .color-warning{color:#F0C0CF}
     button.type-chip{display:block;width:100%}
+
+    /* v1.1 welcome, compose preview, and memory controls */
+    .welcome-screen[hidden]{display:none!important}
+    .welcome-screen{position:fixed;inset:0;z-index:120;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 42%,rgba(201,162,74,.10),transparent 25%),linear-gradient(180deg,#080B13,#05070D);color:var(--text);padding:calc(24px + env(safe-area-inset-top)) 28px calc(24px + env(safe-area-inset-bottom))}
+    .welcome-screen::before,.welcome-screen::after{content:"";position:absolute;inset:0;pointer-events:none}
+    .welcome-screen::before{opacity:.55;background-image:radial-gradient(circle at 16% 19%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 78% 17%,#D8C48A 0 1px,transparent 1.5px),radial-gradient(circle at 28% 68%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 82% 76%,#8AB4FF 0 1px,transparent 1.5px);background-size:93px 97px,137px 131px,121px 113px,159px 149px}
+    .welcome-screen::after{background:radial-gradient(circle at center,transparent 36%,rgba(0,0,0,.58) 100%)}
+    .welcome-content{position:relative;z-index:1;width:min(360px,100%);min-height:min(680px,calc(100dvh - 48px));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    .welcome-mark{width:min(260px,72vw);height:220px;margin-bottom:16px;opacity:.9;filter:drop-shadow(0 0 18px rgba(201,162,74,.18))}
+    .welcome-title{margin:0;color:#D8C48A;font-size:42px;letter-spacing:.22em;text-indent:.22em;text-shadow:0 0 26px rgba(201,162,74,.24)}
+    .welcome-copy{margin:14px 0 0;color:#AAA596;font-family:'Shippori Mincho','Hiragino Mincho ProN',serif;font-size:13px;letter-spacing:.12em}
+    .welcome-start{width:100%;min-height:52px;margin-top:auto;border-color:rgba(216,196,138,.44)!important;border-radius:999px!important;background:linear-gradient(135deg,rgba(216,196,138,.94),rgba(125,107,58,.92))!important;color:#111218!important;font-weight:700;font-size:15px!important;letter-spacing:.12em;box-shadow:0 16px 42px rgba(201,162,74,.18)!important}
+    .composer-appearance{display:grid;grid-template-columns:112px minmax(0,1fr);gap:12px;align-items:stretch;border:1px solid rgba(236,232,222,.08);border-radius:16px;padding:11px;background:rgba(12,14,19,.34)}
+    .composer-star-preview{min-height:130px;display:grid;place-items:center;align-content:center;gap:8px;border:1px solid rgba(236,232,222,.07);border-radius:14px;background:radial-gradient(circle at center,rgba(201,162,74,.08),transparent 56%),#0B0E15;overflow:hidden}
+    .composer-preview-star{font-size:46px;line-height:1;text-shadow:0 0 8px currentColor,0 0 24px currentColor}
+    .composer-preview-title{max-width:96px;font-size:11px;line-height:1.45;text-align:center;overflow-wrap:anywhere}
+    .composer-color-controls{display:flex;flex-direction:column;justify-content:center;gap:10px;min-width:0}
+    .composer-color-line{display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .composer-color-line > span{flex:0 0 58px;color:var(--sub);font-size:10px;font-weight:700}
+    .composer-swatches{display:flex;gap:5px;overflow-x:auto;padding:2px;scrollbar-width:none}
+    .composer-swatches::-webkit-scrollbar{display:none}
+    .composer-swatch{width:27px;height:27px;min-width:27px;padding:0;border-radius:999px}
+    .composer-color-picker{width:29px;height:29px;min-width:29px;padding:2px;border-radius:999px;background:transparent}
+    .memory-filter-chips{display:flex;gap:7px;overflow-x:auto;padding:1px 0 4px;scrollbar-width:none}
+    .memory-filter-chips::-webkit-scrollbar{display:none}
+    .memory-chip{min-height:32px;padding:6px 10px;border-radius:999px;font-size:10.5px}
+    .memory-chip.active{border-color:rgba(201,162,74,.58);background:rgba(201,162,74,.14);color:#F2E7BF}
+    .memory-sort-row{display:grid;grid-template-columns:1fr 1fr auto;gap:7px}
+    #noteList .note-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start}
+    .note-card-main{display:block;width:100%;min-width:0;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;text-align:left;white-space:normal;color:inherit}
+    .note-card-main:hover,.note-card-main:active{transform:none;background:transparent;box-shadow:none}
+    .note-card-date{color:#7E8290;font-size:10px;margin:1px 0 5px}
+    .favorite-button{width:36px;height:36px;min-width:36px;padding:0;border-radius:999px;color:#9A9DAA;background:transparent;font-size:20px;line-height:1}
+    .favorite-button.active{border-color:rgba(201,162,74,.42);color:#E5C96F;background:rgba(201,162,74,.08);text-shadow:0 0 14px rgba(229,201,111,.42)}
+    @media(max-width:620px){
+      .welcome-content{min-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px)}
+      .composer-appearance{grid-template-columns:96px minmax(0,1fr)}
+      .composer-star-preview{min-height:122px}
+      .memory-sort-row{grid-template-columns:1fr 1fr}
+      .memory-sort-row #clearSearchBtn{grid-column:1/-1}
+      body.mobile-sheet-memory #memoryPanel .search-box{padding-bottom:9px}
+    }
   </style>
 </head>
 <body>
+  <section class="welcome-screen" id="welcomeScreen" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" hidden>
+    <div class="welcome-content">
+      <svg class="welcome-mark" viewBox="0 0 260 220" aria-hidden="true">
+        <g fill="none" stroke="rgba(216,196,138,.40)" stroke-width="1">
+          <path d="M32 174 L78 128 L112 151 L151 87 L194 118 L226 48" />
+          <path d="M78 128 L61 68 L151 87 L112 151 L182 180 L194 118" />
+        </g>
+        <g fill="#D8C48A">
+          <circle cx="32" cy="174" r="3"/><circle cx="78" cy="128" r="4"/><circle cx="112" cy="151" r="2.5"/><circle cx="151" cy="87" r="6"/><circle cx="194" cy="118" r="3.5"/><circle cx="226" cy="48" r="3"/><circle cx="61" cy="68" r="2.5"/><circle cx="182" cy="180" r="2.5"/>
+        </g>
+      </svg>
+      <h1 class="welcome-title font-display" id="welcomeTitle">星図帖</h1>
+      <p class="welcome-copy">想いを星に、記憶をつなぐ</p>
+      <button class="welcome-start" id="startAppBtn" type="button">はじめる</button>
+    </div>
+  </section>
   <div class="app">
     <header>
       <div class="brand"><h1 class="font-display">星図帖</h1><span class="version font-mono">Version 1.1</span></div>
@@ -1034,6 +1092,17 @@
               <div><label>種類を選ぶ</label><div class="type-grid" id="typeGrid"></div></div>
               <div><label for="tagsInput">タグ</label><input id="tagsInput" placeholder="例：読書、カミュ、問い" autocomplete="off" /></div>
               <div><label for="bodyInput">本文</label><textarea id="bodyInput" placeholder="今日思ったこと、読書で引っかかった問い、仕事の気づきなどを書く…\n\n#読書 のように書いてもタグになります。Enterは改行です。"></textarea><div class="highlight-tools"><button class="highlight-button" id="highlightBodyBtn" type="button">蛍光ペン</button><span class="hint">重要な文章を選択して押します。もう一度押すと解除できます。</span></div></div>
+              <div><label for="noteDateInput">日付</label><input id="noteDateInput" type="date" /></div>
+              <div>
+                <label>星図での見え方</label>
+                <div class="composer-appearance">
+                  <div class="composer-star-preview"><span class="composer-preview-star" id="composerPreviewStar">✦</span><strong class="composer-preview-title" id="composerPreviewTitle">星片のタイトル</strong></div>
+                  <div class="composer-color-controls">
+                    <div class="composer-color-line"><span>星の色</span><div class="composer-swatches" id="composerStarColors"></div><input class="composer-color-picker" id="composerStarColorPicker" type="color" aria-label="星の色を自由に選ぶ" /></div>
+                    <div class="composer-color-line"><span>文字の色</span><div class="composer-swatches" id="composerTextColors"></div><input class="composer-color-picker" id="composerTextColorPicker" type="color" aria-label="タイトルの文字色を自由に選ぶ" /></div>
+                  </div>
+                </div>
+              </div>
               <details>
                 <summary class="hint">画像を添付する</summary>
                 <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px;">
@@ -1053,7 +1122,8 @@
             <div class="panel-head"><div class="panel-title">星片の記憶</div><span class="stat" id="filteredCount">0件表示</span></div>
             <div class="search-box">
               <input id="searchInput" aria-label="星片を検索" placeholder="星片を呼び戻す… タイトル・本文・タグ" />
-              <div class="mini-row"><select id="filterType" aria-label="星片の種類で絞り込む"></select><button id="clearSearchBtn" class="ghost">検索解除</button></div>
+              <div class="memory-filter-chips" id="memoryTagFilters" aria-label="タグとお気に入りで絞り込む"></div>
+              <div class="memory-sort-row"><select id="memorySortOrder" aria-label="星片の並び順"><option value="newest">新しい順</option><option value="oldest">古い順</option><option value="title">タイトル順</option></select><select id="filterType" aria-label="星片の種類で絞り込む"></select><button id="clearSearchBtn" class="ghost">検索解除</button></div>
               <div class="stats" id="stats"></div>
               <details class="graph-access"><summary>星図を一覧で操作</summary><div class="graph-access-list" id="graphAccessList"></div></details>
             </div>
@@ -1139,6 +1209,8 @@
   const hoverMix = {};
   const starTraits = {};
   let selectedType = "memo";
+  let composerStarColor = TYPE_MAP.memo.color;
+  let composerTextColor = COLOR.text;
   let attachedImage = "";
   let physics = {};
   let draggingId = null;
@@ -1154,6 +1226,9 @@
   let currentCopyText = "";
   const LIST_PAGE_SIZE = 4;
   let listPage = 0;
+  let memoryTagFilter = "";
+  let memoryFavoriteOnly = false;
+  let welcomeActive = false;
   const TAG_DETAIL_PAGE_SIZE = 5;
   let tagDetailPage = 0;
   let tagDetailKey = "";
@@ -1182,6 +1257,9 @@
 
   function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-5); }
   function nowText(){ const d=new Date(), p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+  function localDateValue(value=new Date()){ const d=value instanceof Date?value:new Date(value); if(Number.isNaN(d.getTime())) return ""; const p=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+  function validDateValue(value){ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value||""))) return ""; const [y,m,d]=String(value).split("-").map(Number), test=new Date(y,m-1,d); return test.getFullYear()===y&&test.getMonth()===m-1&&test.getDate()===d?String(value):""; }
+  function createdAtFromDate(value){ const safe=validDateValue(value)||localDateValue(); const [y,m,d]=safe.split("-").map(Number), now=new Date(); return new Date(y,m-1,d,now.getHours(),now.getMinutes(),now.getSeconds()).toISOString(); }
   function cleanTag(t){ return String(t||"").trim().replace(/^#/g,"").replace(/[、。,.!?！？]+$/g,"").slice(0,MAX_TAG_LENGTH); }
   function escapeHtml(str){ return String(str ?? "").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[s])); }
   function truncate(s,n){ const v=String(s||""); return v.length>n ? v.slice(0,n)+"…" : v; }
@@ -1189,7 +1267,7 @@
   function isUsefulKeyword(w){ return !(/^[0-9]+$/.test(w) || /^[ぁ-ん]{2,4}$/.test(w)); }
   function saveDraft(){
     clearTimeout(draftSaveTimer);
-    const draft={title:$("titleInput").value,tags:$("tagsInput").value,body:$("bodyInput").value,type:$("typeInput").value||selectedType};
+    const draft={title:$("titleInput").value,tags:$("tagsInput").value,body:$("bodyInput").value,type:$("typeInput").value||selectedType,noteDate:$("noteDateInput").value,starColor:composerStarColor,textColor:composerTextColor};
     try{ if(draft.title.trim()||draft.tags.trim()||draft.body.trim()) localStorage.setItem(DRAFT_KEY,JSON.stringify(draft)); else localStorage.removeItem(DRAFT_KEY); }catch{}
   }
   function scheduleDraftSave(){ clearTimeout(draftSaveTimer); draftSaveTimer=setTimeout(saveDraft,250); }
@@ -1201,7 +1279,11 @@
       const title=typeof draft.title==="string"?draft.title:"", tags=typeof draft.tags==="string"?draft.tags:"", body=typeof draft.body==="string"?draft.body:"";
       if(!title.trim()&&!tags.trim()&&!body.trim()) return false;
       $("titleInput").value=title.slice(0,500); $("tagsInput").value=tags.slice(0,1000); $("bodyInput").value=body.slice(0,500000);
-      selectedType=TYPES.some(t=>t.key===draft.type)?draft.type:"memo"; $("typeInput").value=selectedType; renderTypeGrid();
+      $("noteDateInput").value=validDateValue(draft.noteDate)||localDateValue();
+      selectedType=TYPES.some(t=>t.key===draft.type)?draft.type:"memo"; $("typeInput").value=selectedType;
+      composerStarColor=HEX_COLOR.test(draft.starColor||"")?draft.starColor:typeInfo(selectedType).color;
+      composerTextColor=HEX_COLOR.test(draft.textColor||"")?draft.textColor:COLOR.text;
+      renderTypeGrid(); renderComposerAppearance();
       return true;
     }catch{ try{ localStorage.removeItem(DRAFT_KEY); }catch{} return false; }
   }
@@ -1213,6 +1295,7 @@
     const tags = Array.isArray(n.tags) ? n.tags.map(cleanTag).filter(Boolean) : [];
     const type = TYPES.some(t => t.key === n.type) ? n.type : inferType(raw + " " + tags.join(" "));
     const id = n.id || uid();
+    const createdAt=(typeof n.createdAt==="string" && !Number.isNaN(new Date(n.createdAt).getTime()))?n.createdAt:new Date().toISOString();
     return {
       id,
       title: n.title || makeTitle(raw, []),
@@ -1227,9 +1310,11 @@
       links: Array.isArray(n.links) ? [...new Set(n.links.filter(x => x && x !== id))] : [],
       starColor: n.starColor || typeInfo(type).color,
       textColor: n.textColor || COLOR.text,
-      createdAt: n.createdAt || new Date().toISOString(),
+      noteDate: validDateValue(n.noteDate) || localDateValue(createdAt),
+      favorite: n.favorite === true,
+      createdAt,
       createdLabel: n.createdLabel || nowText(),
-      updatedAt: n.updatedAt || n.createdAt || new Date().toISOString()
+      updatedAt: n.updatedAt || createdAt
     };
   }
 
@@ -1264,7 +1349,7 @@
   function isPlainObject(value){ return !!value && typeof value === "object" && !Array.isArray(value); }
   function validateImportNote(note,index){
     if(!isPlainObject(note)) throw new Error(`星片${index+1}の形式が正しくありません。`);
-    const textFields=["id","title","type","body","raw","content","aiSummary","imageData","image","starColor","textColor","createdAt","createdLabel","updatedAt"];
+    const textFields=["id","title","type","body","raw","content","aiSummary","imageData","image","starColor","textColor","noteDate","createdAt","createdLabel","updatedAt"];
     for(const key of textFields) if(note[key] != null && typeof note[key] !== "string") throw new Error(`星片${index+1}の「${key}」が文字列ではありません。`);
     if((note.id||"").length>160 || (note.title||"").length>500 || (note.body||note.raw||"").length>500000) throw new Error(`星片${index+1}の文字数が上限を超えています。`);
     const image=note.imageData||note.image||"";
@@ -1272,6 +1357,8 @@
     const itemLimits={tags:MAX_TAG_LENGTH,keywords:MAX_KEYWORD_LENGTH,links:MAX_LINK_ID_LENGTH};
     for(const key of ["tags","keywords","links"]) if(note[key] != null && (!Array.isArray(note[key]) || note[key].length>2000 || note[key].some(v=>typeof v!=="string" || v.length>itemLimits[key]))) throw new Error(`星片${index+1}の「${key}」が不正です。`);
     for(const key of ["starColor","textColor"]) if(note[key] && !HEX_COLOR.test(note[key])) throw new Error(`星片${index+1}の色指定が不正です。`);
+    if(note.noteDate && !validDateValue(note.noteDate)) throw new Error(`星片${index+1}の日付が不正です。`);
+    if(note.favorite != null && typeof note.favorite!=="boolean") throw new Error(`星片${index+1}のお気に入り指定が不正です。`);
   }
   function validateTagStyles(value){
     if(value == null) return {};
@@ -1429,14 +1516,32 @@
     const typeInput = $("typeInput");
     typeInput.innerHTML = TYPES.map(t => `<option value="${t.key}">${t.icon} ${t.label}</option>`).join("");
     typeInput.value = selectedType;
-    typeInput.onchange = () => { selectedType = typeInput.value; renderTypeGrid(); scheduleDraftSave(); };
+    typeInput.onchange = () => { selectedType = typeInput.value; composerStarColor=typeInfo(selectedType).color; renderTypeGrid(); renderComposerAppearance(); scheduleDraftSave(); };
     renderTypeGrid();
     const filter = $("filterType");
     filter.innerHTML = `<option value="all">すべての種類</option>` + TYPES.map(t => `<option value="${t.key}">${t.icon} ${t.label}</option>`).join("");
   }
   function renderTypeGrid(){
     $("typeGrid").innerHTML = TYPES.map(t => `<button type="button" class="type-chip ${selectedType===t.key ? "active" : ""}" data-type="${t.key}" aria-pressed="${selectedType===t.key}">${t.icon}<br>${t.label}</button>`).join("");
-    $("typeGrid").querySelectorAll(".type-chip").forEach(el => el.onclick = () => { selectedType = el.dataset.type; $("typeInput").value = selectedType; renderTypeGrid(); scheduleDraftSave(); });
+    $("typeGrid").querySelectorAll(".type-chip").forEach(el => el.onclick = () => { selectedType = el.dataset.type; composerStarColor=typeInfo(selectedType).color; $("typeInput").value = selectedType; renderTypeGrid(); renderComposerAppearance(); scheduleDraftSave(); });
+  }
+  function renderComposerAppearance(){
+    const title=$("titleInput")?.value.trim() || "星片のタイトル";
+    const previewStar=$("composerPreviewStar"), previewTitle=$("composerPreviewTitle");
+    if(previewStar){ previewStar.style.color=composerStarColor; previewStar.style.textShadow=`0 0 8px ${composerStarColor},0 0 24px ${composerStarColor}`; }
+    if(previewTitle){ previewTitle.textContent=truncate(title,24); previewTitle.style.color=composerTextColor; }
+    const starHost=$("composerStarColors"), textHost=$("composerTextColors");
+    if(starHost) starHost.innerHTML=STAR_COLORS.slice(0,5).map(([name,color])=>`<button type="button" class="composer-swatch" data-compose-field="starColor" data-color="${color}" aria-label="星の色 ${name}" style="background:${color};border-color:${color.toLowerCase()===composerStarColor.toLowerCase()?"#fff":"rgba(255,255,255,.18)"}"></button>`).join("");
+    if(textHost) textHost.innerHTML=TEXT_COLORS.slice(0,5).map(([name,color])=>`<button type="button" class="composer-swatch" data-compose-field="textColor" data-color="${color}" aria-label="文字の色 ${name}" style="background:${color};border-color:${color.toLowerCase()===composerTextColor.toLowerCase()?"#fff":"rgba(255,255,255,.18)"}"></button>`).join("");
+    const starPicker=$("composerStarColorPicker"), textPicker=$("composerTextColorPicker");
+    if(starPicker) starPicker.value=composerStarColor;
+    if(textPicker) textPicker.value=composerTextColor;
+    document.querySelectorAll("[data-compose-field]").forEach(button=>button.onclick=()=>setComposerColor(button.dataset.composeField,button.dataset.color));
+  }
+  function setComposerColor(field,value){
+    if(!HEX_COLOR.test(value||"")) return;
+    if(field==="textColor") composerTextColor=value; else composerStarColor=value;
+    renderComposerAppearance(); scheduleDraftSave();
   }
 
 
@@ -1453,6 +1558,13 @@
     if(!standalone){ document.documentElement.style.removeProperty("--standalone-header-bottom"); return; }
     const header=document.querySelector("header");
     if(header) document.documentElement.style.setProperty("--standalone-header-bottom",`${Math.ceil(header.getBoundingClientRect().bottom)}px`);
+  }
+  function initWelcomeScreen(){
+    const welcome=$("welcomeScreen"), app=document.querySelector(".app"), start=$("startAppBtn");
+    if(!welcome || !isStandaloneMode()){ if(welcome) welcome.hidden=true; return; }
+    welcomeActive=true; welcome.hidden=false; if(app) app.inert=true;
+    start.onclick=()=>{ welcomeActive=false; welcome.hidden=true; if(app) app.inert=false; resumeCanvasAfterComposer(); canvas.focus(); };
+    setTimeout(()=>start.focus(),0);
   }
   function isTextEntry(el){
     if(el instanceof HTMLTextAreaElement) return true;
@@ -1545,14 +1657,16 @@
     const manualTags = parseList($("tagsInput").value, 10);
     const textTags = extractTagsFromText(body);
     const tags = [...new Set([...manualTags, ...textTags])].slice(0,10);
+    const noteDate=validDateValue($("noteDateInput").value)||localDateValue();
+    const createdAt=createdAtFromDate(noteDate);
     const note = normalizeNote({
       id: uid(), title: titleRaw, type, body, raw: body, content: makeContent(body), tags,
       aiSummary:"", keywords:[], imageData: attachedImage,
-      starColor: typeInfo(type).color, textColor: typeInfo(type).color, createdAt: new Date().toISOString(), createdLabel: nowText()
+      starColor: composerStarColor, textColor: composerTextColor, noteDate, favorite:false, createdAt, createdLabel: noteDate
     });
     if(!saveNotes([...notes,note])) return;
     selectedId = note.id; focusedNodeId = note.id;
-    $("titleInput").value = ""; $("bodyInput").value = ""; $("tagsInput").value = ""; clearDraft(); clearImage(false);
+    $("titleInput").value = ""; $("bodyInput").value = ""; $("tagsInput").value = ""; $("noteDateInput").value=localDateValue(); composerStarColor=typeInfo(selectedType).color; composerTextColor=COLOR.text; renderComposerAppearance(); clearDraft(); clearImage(false);
     initPhysics(true); render(); closeMobileSheet(); closeDesktopComposer(); toast("星片を1つ綴りました。✦");
   }
 
@@ -1598,7 +1712,7 @@
     return palette[hash % palette.length];
   }
   function isComposerVisible(){ return document.body.classList.contains("desktop-compose-open") || document.body.classList.contains("mobile-sheet-compose"); }
-  function canvasMustPause(){ return document.hidden || isComposerVisible(); }
+  function canvasMustPause(){ return document.hidden || welcomeActive || isComposerVisible(); }
   function stopCanvasScheduling(){
     if(canvasFrameId){ cancelAnimationFrame(canvasFrameId); canvasFrameId=0; }
     if(idleTwinkleTimer){ clearTimeout(idleTwinkleTimer); idleTwinkleTimer=0; }
@@ -2083,12 +2197,18 @@
   function getFilteredNotes(){
     const q = $("searchInput")?.value.trim().toLowerCase() || "";
     const type = $("filterType")?.value || "all";
-    return [...notes].reverse().filter(n => {
+    const order=$("memorySortOrder")?.value || "newest";
+    const filtered=[...notes].filter(n => {
       if(type !== "all" && n.type !== type) return false;
+      if(memoryFavoriteOnly && !n.favorite) return false;
+      if(memoryTagFilter && !(n.tags||[]).includes(memoryTagFilter)) return false;
       if(!q) return true;
       const hay = [n.title,n.body,n.content,(n.tags||[]).join(" "),typeInfo(n.type).label].join(" ").toLowerCase();
       return hay.includes(q);
     });
+    if(order==="title") filtered.sort((a,b)=>String(a.title).localeCompare(String(b.title),"ja"));
+    else filtered.sort((a,b)=>{ const av=new Date(a.createdAt).getTime()||0,bv=new Date(b.createdAt).getTime()||0; return order==="oldest"?av-bv:bv-av; });
+    return filtered;
   }
   function render(){ renderCounts(); renderList(); renderDetail(); lastFrameTime=0; requestCanvasFrame(); }
   let detailScrollResetToken=0;
@@ -2126,6 +2246,7 @@
   }
   function renderCounts(){
     renderGraphTagFilter();
+    renderMemoryFilters();
     $("noteCount").textContent = `${notes.length} 星片`;
     const graphEmpty = $("graphEmpty");
     if(graphEmpty){ graphEmpty.classList.toggle("show", notes.length === 0); }
@@ -2136,6 +2257,14 @@
     const counts = TYPES.map(t => `${t.icon} ${notes.filter(n=>n.type===t.key).length}`);
     $("stats").innerHTML = counts.map(c => `<span class="stat">${escapeHtml(c)}</span>`).join("");
     renderGraphAccessList();
+  }
+  function renderMemoryFilters(){
+    const host=$("memoryTagFilters"); if(!host) return;
+    const tags=availableGraphTags();
+    host.innerHTML=`<button type="button" class="memory-chip ${!memoryFavoriteOnly&&!memoryTagFilter?"active":""}" data-memory-filter="all">すべて</button><button type="button" class="memory-chip ${memoryFavoriteOnly?"active":""}" data-memory-filter="favorite">☆ お気に入り</button>${tags.map(tag=>`<button type="button" class="memory-chip ${memoryTagFilter===tag?"active":""}" data-memory-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</button>`).join("")}`;
+    host.querySelector('[data-memory-filter="all"]')?.addEventListener("click",()=>{ memoryFavoriteOnly=false; memoryTagFilter=""; listPage=0; render(); });
+    host.querySelector('[data-memory-filter="favorite"]')?.addEventListener("click",()=>{ memoryFavoriteOnly=!memoryFavoriteOnly; listPage=0; render(); });
+    host.querySelectorAll("[data-memory-tag]").forEach(button=>button.onclick=()=>{ memoryTagFilter=memoryTagFilter===button.dataset.memoryTag?"":button.dataset.memoryTag; listPage=0; render(); });
   }
   function renderGraphAccessList(){
     const host=$("graphAccessList"); if(!host) return;
@@ -2149,7 +2278,7 @@
     const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE));
     listPage = Math.max(0, Math.min(listPage, totalPages - 1));
     if(!filtered.length){
-      list.innerHTML = `<div class="empty">最初の星片を綴りましょう。</div>`;
+      list.innerHTML = `<div class="empty">${notes.length?"条件に合う星片がありません。":"最初の星片を綴りましょう。"}</div>`;
       if(pager) pager.hidden = true;
       return;
     }
@@ -2157,7 +2286,8 @@
     const pageItems = filtered.slice(start, start + LIST_PAGE_SIZE);
     list.innerHTML = pageItems.map(n => {
       const t=typeInfo(n.type);
-      return `<div class="note-card ${selectedId===n.id ? "active" : ""}" tabindex="0" role="button" data-id="${escapeHtml(n.id)}" style="border-left-color:${escapeHtml(n.starColor||t.color)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}"><span style="color:${escapeHtml(n.starColor||t.color)}">✦</span><span>${escapeHtml(n.title)}</span></div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div><div class="note-meta"><span class="kind">${t.icon} ${t.label}</span>${(n.tags||[]).slice(0,3).map(tag=>`<span class="tag">#${escapeHtml(tag)}</span>`).join("")}${n.links?.length?`<span class="keyword">線 ${n.links.length}</span>`:""}</div></div>`;
+      const date=n.noteDate||localDateValue(n.createdAt);
+      return `<div class="note-card ${selectedId===n.id ? "active" : ""}" data-id="${escapeHtml(n.id)}" style="border-left-color:${escapeHtml(n.starColor||t.color)}"><button type="button" class="note-card-main" data-open-note="${escapeHtml(n.id)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}"><span style="color:${escapeHtml(n.starColor||t.color)}">✦</span><span>${escapeHtml(n.title)}</span></div><div class="note-card-date">${escapeHtml(date)} ・ ${escapeHtml(t.icon+" "+t.label)}</div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div><div class="note-meta">${(n.tags||[]).slice(0,3).map(tag=>`<span class="tag">#${escapeHtml(tag)}</span>`).join("")}${n.links?.length?`<span class="keyword">線 ${n.links.length}</span>`:""}</div></button><button type="button" class="favorite-button ${n.favorite?"active":""}" data-favorite-note="${escapeHtml(n.id)}" aria-label="${n.favorite?"お気に入りから外す":"お気に入りに追加"}" aria-pressed="${n.favorite?"true":"false"}">${n.favorite?"★":"☆"}</button></div>`;
     }).join("");
     if(pager){
       pager.hidden = totalPages <= 1;
@@ -2165,7 +2295,14 @@
       $("prevPageBtn").disabled = listPage <= 0;
       $("nextPageBtn").disabled = listPage >= totalPages - 1;
     }
-    list.querySelectorAll(".note-card").forEach(card => { const open=()=>{ selectedId=card.dataset.id; focusedNodeId=selectedId; render(); closeMobileSheet(); }; card.onclick=open; card.onkeydown=(e)=>{ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } }; });
+    list.querySelectorAll("[data-open-note]").forEach(button => button.onclick=()=>{ selectedId=button.dataset.openNote; focusedNodeId=selectedId; render(); closeMobileSheet(); });
+    list.querySelectorAll("[data-favorite-note]").forEach(button=>button.onclick=()=>toggleFavorite(button.dataset.favoriteNote));
+  }
+  function toggleFavorite(id){
+    const note=notes.find(n=>n.id===id); if(!note) return;
+    const next=notes.map(n=>n.id===id?{...n,favorite:!n.favorite}:n);
+    if(!saveNotes(next)) return;
+    render(); toast(note.favorite?"お気に入りから外しました。":"お気に入りに追加しました。");
   }
   function renderDetail(){
     const detail = $("detail");
@@ -2207,7 +2344,7 @@
       <div class="section"><div class="section-label">タグとつながり</div><div class="note-meta">${(n.tags||[]).length ? n.tags.map(tag=>`<span class="tag">#${escapeHtml(tag)}</span>`).join("") : `<span class="hint">タグなし</span>`}</div><div class="link-tools" style="margin-top:10px;"><select id="linkSelect"><option value="">星片を選んでつなげる</option>${candidates.map(x=>`<option value="${escapeHtml(x.id)}">${escapeHtml(typeInfo(x.type).icon + " " + x.title)}</option>`).join("")}</select><button id="addLinkBtn">つなげる</button></div><div class="linked-list">${linked.length ? linked.map(x=>`<span class="link-chip">${escapeHtml(typeInfo(x.type).icon)} ${escapeHtml(x.title)} <button data-unlink="${escapeHtml(x.id)}">×</button></span>`).join("") : `<span class="hint">手動リンクはまだありません。</span>`}</div></div>
       <div class="edit-tools" id="editTools" hidden>
         <div class="panel-title">星片を編集</div>
-        <div class="edit-grid" style="margin-top:10px;"><div><label for="editTitleInput">タイトル</label><input id="editTitleInput" value="${escapeHtml(n.title)}" /></div><div><label for="editTypeInput">種類</label><select id="editTypeInput">${TYPES.map(x=>`<option value="${x.key}" ${x.key===n.type?"selected":""}>${x.icon} ${x.label}</option>`).join("")}</select></div></div>
+        <div class="edit-grid" style="margin-top:10px;"><div><label for="editTitleInput">タイトル</label><input id="editTitleInput" value="${escapeHtml(n.title)}" /></div><div><label for="editTypeInput">種類</label><select id="editTypeInput">${TYPES.map(x=>`<option value="${x.key}" ${x.key===n.type?"selected":""}>${x.icon} ${x.label}</option>`).join("")}</select></div><div><label for="editNoteDateInput">日付</label><input id="editNoteDateInput" type="date" value="${escapeHtml(n.noteDate||localDateValue(n.createdAt))}" /></div></div>
         <div style="margin-top:10px;"><label for="editTagsInput">タグ</label><input id="editTagsInput" value="${escapeHtml((n.tags||[]).join("、"))}" /></div>
         <div style="margin-top:10px;"><label for="editBodyInput">自分のメモ</label><textarea id="editBodyInput">${escapeHtml(n.body || n.raw || "")}</textarea><div class="composer-actions highlight-action-row"><button class="highlight-button" id="highlightEditBodyBtn" type="button">蛍光ペン</button><div class="edit-inline-actions"><button id="cancelEditBtn">キャンセル</button><button class="primary" id="saveEditBtn">保存する</button></div></div></div>
         <div style="margin-top:10px;">
@@ -2221,7 +2358,7 @@
         </div>
       </div>
       <div class="section"><div class="section-label">ChatGPTで振り返る</div><div class="link-tools"><button id="copySummaryPromptBtn">この星片を要約用にコピー</button><button id="copyTodaySummaryPromptBtn">今日の星片をコピー</button><button id="copyAllSummaryPromptBtn">全星片をコピー</button></div></div>
-      <div class="hint" style="margin-top:10px;">作成：${escapeHtml(n.createdLabel || "")} / 更新：${escapeHtml(n.updatedAt ? new Date(n.updatedAt).toLocaleString("ja-JP") : "")}</div>`;
+      <div class="hint" style="margin-top:10px;">日付：${escapeHtml(n.noteDate||localDateValue(n.createdAt))} / 更新：${escapeHtml(n.updatedAt ? new Date(n.updatedAt).toLocaleString("ja-JP") : "")}</div>`;
     detail.hidden = false;
     resetDetailScroll(detail);
     let pendingEditImageData=n.imageData || "";
@@ -2398,7 +2535,8 @@
     if(!title) return toast("タイトルを入力してください。");
     if(!body) return toast("本文は空にできません。");
     const type=$("editTypeInput").value;
-    const updated={...n,title,type,body,raw:body,content:makeContent(body),tags:parseList($("editTagsInput").value,10),imageData:imageData||"",updatedAt:new Date().toISOString()};
+    const noteDate=validDateValue($("editNoteDateInput").value)||n.noteDate||localDateValue(n.createdAt);
+    const updated={...n,title,type,body,raw:body,content:makeContent(body),tags:parseList($("editTagsInput").value,10),imageData:imageData||"",noteDate,createdAt:noteDate===(n.noteDate||localDateValue(n.createdAt))?n.createdAt:createdAtFromDate(noteDate),createdLabel:noteDate,updatedAt:new Date().toISOString()};
     if(!updated.starColor) updated.starColor=typeInfo(type).color;
     if(!updated.textColor) updated.textColor=COLOR.text;
     if(!saveNotes(notes.map(x=>x.id===id ? updated : x))) return;
@@ -2456,7 +2594,8 @@
     try{ commitImportedData([],{},{}); }
     catch(error){ toast(error?.message||"削除に失敗しました。データは変更していません。"); return; }
     const draftCleared=clearDraft();
-    $("titleInput").value=""; $("bodyInput").value=""; $("tagsInput").value="";
+    $("titleInput").value=""; $("bodyInput").value=""; $("tagsInput").value=""; $("noteDateInput").value=localDateValue();
+    composerStarColor=typeInfo(selectedType).color; composerTextColor=COLOR.text; memoryTagFilter=""; memoryFavoriteOnly=false; renderComposerAppearance();
     clearImage(false);
     selectedId=null; focusedNodeId=null; physics={}; closeModal("confirmModal"); render();
     toast(draftCleared ? "すべて削除しました。" : "星片は削除しましたが、下書きを削除できませんでした。");
@@ -2464,7 +2603,7 @@
 
   function noteToMarkdown(n){
     const t=typeInfo(n.type);
-    return ["---",`title: "${String(n.title).replaceAll('"','\\"')}"`,`type: "${t.label}"`,`created: "${n.createdLabel||""}"`,"tags:",...(n.tags||[]).map(tag=>`  - ${tag}`),"links:",...(n.links||[]).map(id=>`  - ${(notes.find(x=>x.id===id)||{}).title || id}`),"---","",`# ${n.title}`,"","## 自分のメモ",n.body||""].join("\n");
+    return ["---",`title: "${String(n.title).replaceAll('"','\\"')}"`,`type: "${t.label}"`,`date: "${n.noteDate||localDateValue(n.createdAt)}"`,`favorite: ${n.favorite?"true":"false"}`,"tags:",...(n.tags||[]).map(tag=>`  - ${tag}`),"links:",...(n.links||[]).map(id=>`  - ${(notes.find(x=>x.id===id)||{}).title || id}`),"---","",`# ${n.title}`,"","## 自分のメモ",n.body||""].join("\n");
   }
   function formatNote(n,i){ const t=typeInfo(n.type); return [`【星片${i}】${n.title}`,`種類：${t.icon} ${t.label}`,`作成：${n.createdLabel || ""}`,(n.tags||[]).length?`タグ：${(n.tags||[]).map(x=>"#"+x).join(" ")}`:"",(n.links||[]).length?`手動リンク：${(n.links||[]).map(id=>(notes.find(x=>x.id===id)||{}).title).filter(Boolean).join("、")}`:"","",n.body || n.content || ""].filter(Boolean).join("\n"); }
   function buildSingleSummaryPrompt(n){ return ["以下の星片を要約してください。","","条件：","- 要点を3つ以内で整理","- タグや手動リンクから見えるつながりも短く補足","- 次に考える問いがあれば1つ提案","",formatNote(n,1)].join("\n"); }
@@ -2596,8 +2735,10 @@
     $("exportModal").onclick = e => { if(e.target.id === "exportModal") closeModal("exportModal"); };
     $("importBtn").onclick = () => $("importFile").click(); $("importFile").onchange = e => { const file=e.target.files[0]; if(file) importJSON(file); e.target.value=""; };
     $("imageBtn").onclick = () => $("imageInput").click(); $("imageInput").onchange = e => handleImage(e.target.files[0]); $("removeImageBtn").onclick = () => clearImage(true);
-    $("searchInput").oninput = () => { listPage=0; render(); }; $("filterType").onchange = () => { listPage=0; render(); }; $("clearSearchBtn").onclick = () => { $("searchInput").value=""; $("filterType").value="all"; listPage=0; render(); }; $("prevPageBtn").onclick = () => { listPage=Math.max(0,listPage-1); render(); }; $("nextPageBtn").onclick = () => { listPage=listPage+1; render(); };
-    for(const id of ["titleInput","tagsInput","bodyInput"]){ $(id).addEventListener("input",()=>{ $(id).removeAttribute("aria-invalid"); scheduleDraftSave(); }); }
+    $("searchInput").oninput = () => { listPage=0; render(); }; $("filterType").onchange = () => { listPage=0; render(); }; $("memorySortOrder").onchange=()=>{ listPage=0; render(); }; $("clearSearchBtn").onclick = () => { $("searchInput").value=""; $("filterType").value="all"; $("memorySortOrder").value="newest"; memoryTagFilter=""; memoryFavoriteOnly=false; listPage=0; render(); }; $("prevPageBtn").onclick = () => { listPage=Math.max(0,listPage-1); render(); }; $("nextPageBtn").onclick = () => { listPage=listPage+1; render(); };
+    for(const id of ["titleInput","tagsInput","bodyInput","noteDateInput"]){ $(id).addEventListener("input",()=>{ $(id).removeAttribute("aria-invalid"); if(id==="titleInput") renderComposerAppearance(); scheduleDraftSave(); }); }
+    $("composerStarColorPicker").oninput=e=>setComposerColor("starColor",e.target.value);
+    $("composerTextColorPicker").oninput=e=>setComposerColor("textColor",e.target.value);
     $("graphTagFilter").onchange = e => setGraphTagFilter(e.target.value);
     $("shakeBtn").onclick = shakeGraph; $("zoomOutBtn").onclick = () => setZoom(view.scale/1.2); $("zoomInBtn").onclick = () => setZoom(view.scale*1.2); $("resetViewBtn").onclick = resetView;
     canvas.addEventListener("mousedown", onDown); canvas.addEventListener("mousemove", onMove);
@@ -2624,7 +2765,7 @@
     });
   }
 
-  syncStandaloneLayout(); setupTypes(); const draftRestored=restoreDraft(); bindEvents(); resize(); initPhysics(false); fitViewToSavedLayouts(); render(); requestCanvasFrame(); updateZoomLabel();
+  syncStandaloneLayout(); initWelcomeScreen(); setupTypes(); $("noteDateInput").value=localDateValue(); renderComposerAppearance(); const draftRestored=restoreDraft(); bindEvents(); resize(); initPhysics(false); fitViewToSavedLayouts(); render(); requestCanvasFrame(); updateZoomLabel();
   if(draftRestored) setTimeout(()=>toast("入力途中の下書きを復元しました。"),0);
   if(storageLoadFailed) setTimeout(()=>toast("保存データを読み込めなかったため、上書きを停止しています。"),0);
 })();
