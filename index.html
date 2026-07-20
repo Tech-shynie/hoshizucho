@@ -1012,10 +1012,8 @@
     .welcome-screen{position:fixed;inset:0;z-index:120;display:block;overflow:hidden;background:#05070D url("./start-screen.jpg") center center/cover no-repeat;color:var(--text);padding:0}
     .welcome-content{position:absolute;inset:0}
     .welcome-mark,.welcome-title,.welcome-copy{display:none}
-    .welcome-start{position:absolute;left:50%;bottom:6.7%;transform:translateX(-50%);width:min(62%,380px);height:7.5%;min-height:52px;margin:0;padding:0;border:0!important;border-radius:999px!important;background:transparent!important;color:transparent!important;box-shadow:none!important;touch-action:manipulation}
-    .welcome-start:hover{background:rgba(255,255,255,.05)!important}
-    .welcome-start:active{transform:translateX(-50%) scale(.98);background:rgba(255,255,255,.10)!important}
-    .welcome-start:focus-visible{outline:2px solid #F2E7BF;outline-offset:4px}
+    .welcome-start{position:absolute;left:50%;bottom:6.7%;transform:translateX(-50%)!important;width:min(62%,380px);height:7.5%;min-height:52px;margin:0;padding:0;border:0!important;border-radius:999px!important;background:transparent!important;color:transparent!important;outline:0!important;box-shadow:none!important;opacity:0;appearance:none;-webkit-appearance:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    .welcome-start:hover,.welcome-start:active,.welcome-start:focus,.welcome-start:focus-visible{transform:translateX(-50%)!important;border:0!important;background:transparent!important;outline:0!important;box-shadow:none!important}
     .composer-appearance{display:grid;grid-template-columns:112px minmax(0,1fr);gap:12px;align-items:stretch;border:1px solid rgba(236,232,222,.08);border-radius:16px;padding:11px;background:rgba(12,14,19,.34)}
     .composer-star-preview{min-height:130px;display:grid;place-items:center;align-content:center;gap:8px;border:1px solid rgba(236,232,222,.07);border-radius:14px;background:radial-gradient(circle at center,rgba(201,162,74,.08),transparent 56%),#0B0E15;overflow:hidden}
     .composer-preview-star{font-size:46px;line-height:1;text-shadow:0 0 8px currentColor,0 0 24px currentColor}
