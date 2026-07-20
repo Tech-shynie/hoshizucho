@@ -831,6 +831,11 @@
         width:auto;
         max-height:calc(100dvh - 142px);
       }
+      html.standalone-mode body:not(.mobile-keyboard-open) .detail{
+        top:calc(var(--standalone-header-bottom, calc(58px + env(safe-area-inset-top))) + 10px);
+        bottom:calc(76px + env(safe-area-inset-bottom));
+        max-height:none!important;
+      }
       body.mobile-sheet-compose .detail,
       body.mobile-sheet-memory .detail{display:none}
       .toast{bottom:calc(82px + env(safe-area-inset-bottom))}
@@ -1441,6 +1446,13 @@
   }
   function isStandaloneMode(){
     return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+  }
+  function syncStandaloneLayout(){
+    const standalone=isStandaloneMode();
+    document.documentElement.classList.toggle("standalone-mode",standalone);
+    if(!standalone){ document.documentElement.style.removeProperty("--standalone-header-bottom"); return; }
+    const header=document.querySelector("header");
+    if(header) document.documentElement.style.setProperty("--standalone-header-bottom",`${Math.ceil(header.getBoundingClientRect().bottom)}px`);
   }
   function isTextEntry(el){
     if(el instanceof HTMLTextAreaElement) return true;
@@ -2591,7 +2603,7 @@
     canvas.addEventListener("mousedown", onDown); canvas.addEventListener("mousemove", onMove);
   canvas.addEventListener("mouseleave", () => { hoveredNodeId = null; canvas.style.cursor = "default"; requestCanvasFrame(); }); canvas.addEventListener("wheel", onWheel, {passive:false}); window.addEventListener("mouseup", onUp);
     canvas.addEventListener("touchstart", onDown, {passive:false}); canvas.addEventListener("touchmove", onMove, {passive:false}); window.addEventListener("touchend", onUp); window.addEventListener("touchcancel", onCancel);
-    window.addEventListener("resize", () => { resize(); if(!isMobileUX()) setMobileSheet(null); if(!isDesktopComposerUX()) closeDesktopComposer(); });
+    window.addEventListener("resize", () => { syncStandaloneLayout(); resize(); if(!isMobileUX()) setMobileSheet(null); if(!isDesktopComposerUX()) closeDesktopComposer(); });
     document.addEventListener("keydown", handleGlobalKeydown);
     document.addEventListener("focusin", e => { if(isTextEntry(e.target)) scheduleMobileKeyboardViewport(); });
     document.addEventListener("focusout", () => setTimeout(syncMobileKeyboardViewport,320));
@@ -2599,7 +2611,9 @@
       window.visualViewport.addEventListener("resize", syncMobileKeyboardViewport);
       window.visualViewport.addEventListener("scroll", syncMobileKeyboardViewport);
     }
-    window.addEventListener("pageshow",()=>{ const detail=$("detail"); if(isStandaloneMode() && detail && !detail.hidden) resetDetailScroll(detail); });
+    const header=document.querySelector("header");
+    if(window.ResizeObserver && header) new ResizeObserver(syncStandaloneLayout).observe(header);
+    window.addEventListener("pageshow",()=>{ syncStandaloneLayout(); const detail=$("detail"); if(isStandaloneMode() && detail && !detail.hidden) resetDetailScroll(detail); });
     document.addEventListener("visibilitychange", () => {
       if(document.hidden) stopCanvasScheduling();
       else{
@@ -2610,7 +2624,7 @@
     });
   }
 
-  setupTypes(); const draftRestored=restoreDraft(); bindEvents(); resize(); initPhysics(false); fitViewToSavedLayouts(); render(); requestCanvasFrame(); updateZoomLabel();
+  syncStandaloneLayout(); setupTypes(); const draftRestored=restoreDraft(); bindEvents(); resize(); initPhysics(false); fitViewToSavedLayouts(); render(); requestCanvasFrame(); updateZoomLabel();
   if(draftRestored) setTimeout(()=>toast("入力途中の下書きを復元しました。"),0);
   if(storageLoadFailed) setTimeout(()=>toast("保存データを読み込めなかったため、上書きを停止しています。"),0);
 })();
