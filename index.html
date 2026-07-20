@@ -1009,15 +1009,13 @@
 
     /* v1.1 welcome, compose preview, and memory controls */
     .welcome-screen[hidden]{display:none!important}
-    .welcome-screen{position:fixed;inset:0;z-index:120;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 42%,rgba(201,162,74,.10),transparent 25%),linear-gradient(180deg,#080B13,#05070D);color:var(--text);padding:calc(24px + env(safe-area-inset-top)) 28px calc(24px + env(safe-area-inset-bottom))}
-    .welcome-screen::before,.welcome-screen::after{content:"";position:absolute;inset:0;pointer-events:none}
-    .welcome-screen::before{opacity:.55;background-image:radial-gradient(circle at 16% 19%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 78% 17%,#D8C48A 0 1px,transparent 1.5px),radial-gradient(circle at 28% 68%,#fff 0 1px,transparent 1.5px),radial-gradient(circle at 82% 76%,#8AB4FF 0 1px,transparent 1.5px);background-size:93px 97px,137px 131px,121px 113px,159px 149px}
-    .welcome-screen::after{background:radial-gradient(circle at center,transparent 36%,rgba(0,0,0,.58) 100%)}
-    .welcome-content{position:relative;z-index:1;width:min(360px,100%);min-height:min(680px,calc(100dvh - 48px));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-    .welcome-mark{width:min(260px,72vw);height:220px;margin-bottom:16px;opacity:.9;filter:drop-shadow(0 0 18px rgba(201,162,74,.18))}
-    .welcome-title{margin:0;color:#D8C48A;font-size:42px;letter-spacing:.22em;text-indent:.22em;text-shadow:0 0 26px rgba(201,162,74,.24)}
-    .welcome-copy{margin:14px 0 0;color:#AAA596;font-family:'Shippori Mincho','Hiragino Mincho ProN',serif;font-size:13px;letter-spacing:.12em}
-    .welcome-start{width:100%;min-height:52px;margin-top:auto;border-color:rgba(216,196,138,.44)!important;border-radius:999px!important;background:linear-gradient(135deg,rgba(216,196,138,.94),rgba(125,107,58,.92))!important;color:#111218!important;font-weight:700;font-size:15px!important;letter-spacing:.12em;box-shadow:0 16px 42px rgba(201,162,74,.18)!important}
+    .welcome-screen{position:fixed;inset:0;z-index:120;display:block;overflow:hidden;background:#05070D url("./start-screen.jpg") center center/cover no-repeat;color:var(--text);padding:0}
+    .welcome-content{position:absolute;inset:0}
+    .welcome-mark,.welcome-title,.welcome-copy{display:none}
+    .welcome-start{position:absolute;left:50%;bottom:6.7%;transform:translateX(-50%);width:min(62%,380px);height:7.5%;min-height:52px;margin:0;padding:0;border:0!important;border-radius:999px!important;background:transparent!important;color:transparent!important;box-shadow:none!important;touch-action:manipulation}
+    .welcome-start:hover{background:rgba(255,255,255,.05)!important}
+    .welcome-start:active{transform:translateX(-50%) scale(.98);background:rgba(255,255,255,.10)!important}
+    .welcome-start:focus-visible{outline:2px solid #F2E7BF;outline-offset:4px}
     .composer-appearance{display:grid;grid-template-columns:112px minmax(0,1fr);gap:12px;align-items:stretch;border:1px solid rgba(236,232,222,.08);border-radius:16px;padding:11px;background:rgba(12,14,19,.34)}
     .composer-star-preview{min-height:130px;display:grid;place-items:center;align-content:center;gap:8px;border:1px solid rgba(236,232,222,.07);border-radius:14px;background:radial-gradient(circle at center,rgba(201,162,74,.08),transparent 56%),#0B0E15;overflow:hidden}
     .composer-preview-star{font-size:46px;line-height:1;text-shadow:0 0 8px currentColor,0 0 24px currentColor}
@@ -1041,7 +1039,6 @@
     .favorite-button{width:36px;height:36px;min-width:36px;padding:0;border-radius:999px;color:#9A9DAA;background:transparent;font-size:20px;line-height:1}
     .favorite-button.active{border-color:rgba(201,162,74,.42);color:#E5C96F;background:rgba(201,162,74,.08);text-shadow:0 0 14px rgba(229,201,111,.42)}
     @media(max-width:620px){
-      .welcome-content{min-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px)}
       body.mobile-sheet-compose .side,
       body.mobile-sheet-compose #composerPanel,
       body.mobile-sheet-compose #composerPanel .panel-body{max-width:100%;overflow-x:hidden!important;overscroll-behavior-x:none}
