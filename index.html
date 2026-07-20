@@ -2146,6 +2146,23 @@
         <div class="detail-actions"><button id="editNoteBtn">編集</button><button id="copyNoteBtn">Markdownコピー</button><button class="danger" id="deleteNoteBtn">削除</button><button class="ghost" id="closeDetailBtn">閉じる</button></div>
       </div>
       <div class="section"><div class="section-label">自分のメモ</div><div class="markdown" id="bodyView">${renderMarkdown(n.body || n.raw || n.content)}</div>${n.imageData ? `<img class="detail-image" src="${escapeHtml(n.imageData)}" alt="添付画像" />` : ""}</div>
+      <div class="appearance-editor" style="margin-top:13px;">
+        <label>見た目</label>
+        <div class="appearance-row">
+          <div class="appearance-row-label"><span>✦</span><div><strong>星の色</strong><small>星図上の星と左端の光の色を変えます</small></div></div>
+          <div class="swatch-row">
+            ${STAR_COLORS.map(c=>`<button class="swatchBtn" title="星の色：${c[0]}" aria-label="星の色 ${c[0]}" data-field="starColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(n.starColor||t.color).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}
+            <label class="appearance-custom" title="星の色を自由に選ぶ"><input type="color" id="customStarColor" value="${escapeHtml(n.starColor||t.color)}"><span>自由色</span></label>
+          </div>
+        </div>
+        <div class="appearance-row">
+          <div class="appearance-row-label"><span>文</span><div><strong>タイトルの文字色</strong><small>星片タイトルと星図ラベルの文字色を変えます</small></div></div>
+          <div class="swatch-row">
+            ${TEXT_COLORS.map(c=>`<button class="swatchBtn" title="タイトルの文字色：${c[0]}" aria-label="タイトルの文字色 ${c[0]}" data-field="textColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(n.textColor||COLOR.text).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}
+            <label class="appearance-custom" title="タイトルの文字色を自由に選ぶ"><input type="color" id="customTextColor" value="${escapeHtml(n.textColor||COLOR.text)}"><span>自由色</span></label>
+          </div>
+        </div>
+      </div>
       <div class="section"><div class="section-label">タグとつながり</div><div class="note-meta">${(n.tags||[]).length ? n.tags.map(tag=>`<span class="tag">#${escapeHtml(tag)}</span>`).join("") : `<span class="hint">タグなし</span>`}</div><div class="link-tools" style="margin-top:10px;"><select id="linkSelect"><option value="">星片を選んでつなげる</option>${candidates.map(x=>`<option value="${escapeHtml(x.id)}">${escapeHtml(typeInfo(x.type).icon + " " + x.title)}</option>`).join("")}</select><button id="addLinkBtn">つなげる</button></div><div class="linked-list">${linked.length ? linked.map(x=>`<span class="link-chip">${escapeHtml(typeInfo(x.type).icon)} ${escapeHtml(x.title)} <button data-unlink="${escapeHtml(x.id)}">×</button></span>`).join("") : `<span class="hint">手動リンクはまだありません。</span>`}</div></div>
       <div class="edit-tools" id="editTools" hidden>
         <div class="panel-title">星片を編集</div>
@@ -2160,23 +2177,6 @@
             <button id="removeEditImageBtn" type="button" class="ghost">画像を外す</button>
           </div>
           <div class="image-preview ${n.imageData?"show":""}" id="editImagePreview" style="margin-top:8px;"><img id="editImagePreviewImg" ${n.imageData?`src="${escapeHtml(n.imageData)}"`:""} alt="編集中の添付画像プレビュー" /><span class="hint">「保存する」を押すと星片に反映されます。</span></div>
-        </div>
-        <div class="appearance-editor" style="margin-top:10px;">
-          <label>見た目</label>
-          <div class="appearance-row">
-            <div class="appearance-row-label"><span>✦</span><div><strong>星の色</strong><small>星図上の星と左端の光の色を変えます</small></div></div>
-            <div class="swatch-row">
-              ${STAR_COLORS.map(c=>`<button class="swatchBtn" title="星の色：${c[0]}" aria-label="星の色 ${c[0]}" data-field="starColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(n.starColor||t.color).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}
-              <label class="appearance-custom" title="星の色を自由に選ぶ"><input type="color" id="customStarColor" value="${escapeHtml(n.starColor||t.color)}"><span>自由色</span></label>
-            </div>
-          </div>
-          <div class="appearance-row">
-            <div class="appearance-row-label"><span>文</span><div><strong>タイトルの文字色</strong><small>星片タイトルと星図ラベルの文字色を変えます</small></div></div>
-            <div class="swatch-row">
-              ${TEXT_COLORS.map(c=>`<button class="swatchBtn" title="タイトルの文字色：${c[0]}" aria-label="タイトルの文字色 ${c[0]}" data-field="textColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(n.textColor||COLOR.text).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}
-              <label class="appearance-custom" title="タイトルの文字色を自由に選ぶ"><input type="color" id="customTextColor" value="${escapeHtml(n.textColor||COLOR.text)}"><span>自由色</span></label>
-            </div>
-          </div>
         </div>
       </div>
       <div class="section"><div class="section-label">ChatGPTで振り返る</div><div class="link-tools"><button id="copySummaryPromptBtn">この星片を要約用にコピー</button><button id="copyTodaySummaryPromptBtn">今日の星片をコピー</button><button id="copyAllSummaryPromptBtn">全星片をコピー</button></div></div>
@@ -2226,10 +2226,7 @@
     const editable = tag !== "未分類";
     const related = notes.filter(n => (n.tags || []).includes(tag));
     detail.innerHTML = `<div class="detail-head"><div><div class="kind">タグ星</div><h2 class="font-display" data-tag-title style="color:${escapeHtml(textColor)}">#${escapeHtml(tag)}</h2></div><div class="detail-actions">${editable?`<button class="primary" id="filterTagBtn">${activeGraphTag===tag?"すべて表示":"このタグだけ表示"}</button><button id="editTagBtn">編集</button><button class="danger" id="deleteTagBtn">削除</button>`:""}<button class="ghost" id="closeDetailBtn">閉じる</button></div></div>
-      ${editable?`<div class="edit-tools" id="tagEditTools" hidden>
-        <div class="panel-title">タグ星を編集</div>
-        <div style="margin-top:10px;"><label for="editTagNameInput">タグ名</label><input id="editTagNameInput" value="${escapeHtml(tag)}" maxlength="32" /></div>
-        <div class="appearance-editor" style="margin-top:10px;">
+      ${editable?`<div class="appearance-editor" style="margin-top:13px;">
           <label>見た目</label>
           <div class="appearance-row">
             <div class="appearance-row-label"><span>✦</span><div><strong>星の色</strong><small>タグ星と光の色を変えます</small></div></div>
@@ -2240,6 +2237,9 @@
             <div class="swatch-row">${TAG_TEXT_COLORS.map(c=>`<button class="swatchBtn" title="文字の色：${c[0]}" aria-label="文字の色 ${c[0]}" data-tag-field="textColor" data-color="${c[1]}" style="background:${c[1]};color:${c[1]};border:2px solid ${String(textColor).toLowerCase()===c[1].toLowerCase()?"#fff":"rgba(255,255,255,.18)"};"></button>`).join("")}<label class="appearance-custom" title="文字の色を自由に選ぶ"><input type="color" id="customTagTextColor" value="${escapeHtml(textColor)}"><span>自由色</span></label></div>
           </div>
         </div>
+        <div class="edit-tools" id="tagEditTools" hidden>
+        <div class="panel-title">タグ星を編集</div>
+        <div style="margin-top:10px;"><label for="editTagNameInput">タグ名</label><input id="editTagNameInput" value="${escapeHtml(tag)}" maxlength="32" /></div>
         <div class="edit-actions"><button id="cancelTagEditBtn">キャンセル</button><button class="primary" id="saveTagEditBtn">保存する</button></div>
       </div>`:`<div class="hint" style="margin-top:10px;">「未分類」は自動で作られるタグ星です。</div>`}
       <div class="section"><div class="section-label">このタグにつながる星片</div>${related.length ? related.map(n=>`<div class="note-card" tabindex="0" role="button" data-id="${escapeHtml(n.id)}" style="margin-top:8px;border-left-color:${escapeHtml(n.starColor||typeInfo(n.type).color)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}">${escapeHtml(typeInfo(n.type).icon)} ${escapeHtml(n.title)}</div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div></div>`).join("") : `<div class="hint">星片がありません。</div>`}</div>`;
