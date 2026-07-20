@@ -582,6 +582,8 @@
     }
     .detail-head{gap:12px;margin-bottom:1px}
     .detail-actions{gap:8px}
+    .tag-detail-pager{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(236,232,222,.065)}
+    .tag-detail-pager .pager-status{white-space:normal}
     .section{
       margin-top:15px;
       padding:13px;
@@ -594,8 +596,9 @@
     }
     .markdown{line-height:1.94}
     @media(max-width:620px){
-      .detail{padding:14px}
+      .detail{padding:14px;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;touch-action:pan-y;scroll-behavior:auto}
       .section{margin-top:13px;padding:12px}
+      .tag-detail-pager .pager-button{min-width:48px;min-height:42px}
     }
 
   
@@ -1145,6 +1148,9 @@
   let currentCopyText = "";
   const LIST_PAGE_SIZE = 4;
   let listPage = 0;
+  const TAG_DETAIL_PAGE_SIZE = 5;
+  let tagDetailPage = 0;
+  let tagDetailKey = "";
   const VIEW_MIN = 0.35, VIEW_MAX = 2.7;
   let view = { scale:1, x:0, y:0 };
   let size = { w:800, h:520 };
@@ -2134,8 +2140,10 @@
     if(!n){
       const node = buildGraph().nodes.find(x=>x.id===focusedNodeId);
       if(node?.type === "tag") return renderTagDetail(node);
+      tagDetailKey=""; tagDetailPage=0;
       detail.hidden = true; detail.innerHTML = ""; return;
     }
+    tagDetailKey=""; tagDetailPage=0;
     detail.hidden = false;
     const t = typeInfo(n.type);
     const candidates = notes.filter(x=>x.id!==n.id);
@@ -2181,6 +2189,7 @@
       </div>
       <div class="section"><div class="section-label">ChatGPTで振り返る</div><div class="link-tools"><button id="copySummaryPromptBtn">この星片を要約用にコピー</button><button id="copyTodaySummaryPromptBtn">今日の星片をコピー</button><button id="copyAllSummaryPromptBtn">全星片をコピー</button></div></div>
       <div class="hint" style="margin-top:10px;">作成：${escapeHtml(n.createdLabel || "")} / 更新：${escapeHtml(n.updatedAt ? new Date(n.updatedAt).toLocaleString("ja-JP") : "")}</div>`;
+    detail.scrollTop=0;
     let pendingEditImageData=n.imageData || "";
     const setEditImagePreview=value=>{ pendingEditImageData=value||""; const preview=$("editImagePreview"), image=$("editImagePreviewImg"); if(pendingEditImageData){ image.src=pendingEditImageData; preview.classList.add("show"); }else{ image.removeAttribute("src"); preview.classList.remove("show"); } };
     const openEditor = (focus="editTitleInput") => { $("editTools").hidden = false; const target=$(focus); if(target){ target.focus(); if(target.setSelectionRange) target.setSelectionRange(target.value.length,target.value.length); } $("editTools").scrollIntoView({behavior:"smooth",block:"start"}); };
@@ -2225,6 +2234,11 @@
     const textColor = style.textColor || node.textColor || COLOR.text;
     const editable = tag !== "未分類";
     const related = notes.filter(n => (n.tags || []).includes(tag));
+    const detailKey=graphKey(tag);
+    if(tagDetailKey!==detailKey){ tagDetailKey=detailKey; tagDetailPage=0; }
+    const totalPages=Math.max(1,Math.ceil(related.length/TAG_DETAIL_PAGE_SIZE));
+    tagDetailPage=clamp(tagDetailPage,0,totalPages-1);
+    const start=tagDetailPage*TAG_DETAIL_PAGE_SIZE, pageItems=related.slice(start,start+TAG_DETAIL_PAGE_SIZE);
     detail.innerHTML = `<div class="detail-head"><div><div class="kind">タグ星</div><h2 class="font-display" data-tag-title style="color:${escapeHtml(textColor)}">#${escapeHtml(tag)}</h2></div><div class="detail-actions">${editable?`<button class="primary" id="filterTagBtn">${activeGraphTag===tag?"すべて表示":"このタグだけ表示"}</button><button id="editTagBtn">編集</button><button class="danger" id="deleteTagBtn">削除</button>`:""}<button class="ghost" id="closeDetailBtn">閉じる</button></div></div>
       ${editable?`<div class="appearance-editor" style="margin-top:13px;">
           <label>見た目</label>
@@ -2242,8 +2256,9 @@
         <div style="margin-top:10px;"><label for="editTagNameInput">タグ名</label><input id="editTagNameInput" value="${escapeHtml(tag)}" maxlength="32" /></div>
         <div class="edit-actions"><button id="cancelTagEditBtn">キャンセル</button><button class="primary" id="saveTagEditBtn">保存する</button></div>
       </div>`:`<div class="hint" style="margin-top:10px;">「未分類」は自動で作られるタグ星です。</div>`}
-      <div class="section"><div class="section-label">このタグにつながる星片</div>${related.length ? related.map(n=>`<div class="note-card" tabindex="0" role="button" data-id="${escapeHtml(n.id)}" style="margin-top:8px;border-left-color:${escapeHtml(n.starColor||typeInfo(n.type).color)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}">${escapeHtml(typeInfo(n.type).icon)} ${escapeHtml(n.title)}</div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div></div>`).join("") : `<div class="hint">星片がありません。</div>`}</div>`;
-    $("closeDetailBtn").onclick = () => { selectedId=null; focusedNodeId=null; render(); };
+      <div class="section"><div class="section-label">このタグにつながる星片（${related.length}件）</div>${related.length ? pageItems.map(n=>`<div class="note-card" tabindex="0" role="button" data-id="${escapeHtml(n.id)}" style="margin-top:8px;border-left-color:${escapeHtml(n.starColor||typeInfo(n.type).color)}"><div class="note-card-title" style="color:${escapeHtml(n.textColor||COLOR.text)}">${escapeHtml(typeInfo(n.type).icon)} ${escapeHtml(n.title)}</div><div class="note-card-body">${escapeHtml(n.content || n.body)}</div></div>`).join("") : `<div class="hint">星片がありません。</div>`}${totalPages>1?`<div class="tag-detail-pager"><button class="pager-button ghost" id="prevTagDetailPageBtn" type="button" aria-label="前の関連星片ページ" ${tagDetailPage===0?"disabled":""}>‹</button><div class="pager-status">第${tagDetailPage+1}星域 / ${totalPages}（全${related.length}件）</div><button class="pager-button ghost" id="nextTagDetailPageBtn" type="button" aria-label="次の関連星片ページ" ${tagDetailPage>=totalPages-1?"disabled":""}>›</button></div>`:""}</div>`;
+    detail.scrollTop=0;
+    $("closeDetailBtn").onclick = () => { tagDetailKey=""; tagDetailPage=0; selectedId=null; focusedNodeId=null; render(); };
     if(editable){
       $("filterTagBtn").onclick = () => setGraphTagFilter(activeGraphTag===tag ? "" : tag);
       $("editTagBtn").onclick = () => { $("tagEditTools").hidden=false; $("editTagNameInput").focus(); $("tagEditTools").scrollIntoView({behavior:"smooth",block:"start"}); };
@@ -2260,6 +2275,9 @@
         }
       };
     }
+    const prevTagPage=$("prevTagDetailPageBtn"), nextTagPage=$("nextTagDetailPageBtn");
+    if(prevTagPage) prevTagPage.onclick=()=>{ tagDetailPage=Math.max(0,tagDetailPage-1); renderTagDetail(node); };
+    if(nextTagPage) nextTagPage.onclick=()=>{ tagDetailPage=Math.min(totalPages-1,tagDetailPage+1); renderTagDetail(node); };
     detail.querySelectorAll(".note-card").forEach(card => { const open=()=>{ selectedId=card.dataset.id; focusedNodeId=selectedId; render(); closeMobileSheet(); }; card.onclick=open; card.onkeydown=(e)=>{ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); open(); } }; });
   }
   function updateTagStyle(tag,field,value,silent=false){
