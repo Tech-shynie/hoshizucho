@@ -1042,8 +1042,14 @@
     .favorite-button.active{border-color:rgba(201,162,74,.42);color:#E5C96F;background:rgba(201,162,74,.08);text-shadow:0 0 14px rgba(229,201,111,.42)}
     @media(max-width:620px){
       .welcome-content{min-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 48px)}
-      .composer-appearance{grid-template-columns:96px minmax(0,1fr)}
-      .composer-star-preview{min-height:122px}
+      body.mobile-sheet-compose .side,
+      body.mobile-sheet-compose #composerPanel,
+      body.mobile-sheet-compose #composerPanel .panel-body{max-width:100%;overflow-x:hidden!important;overscroll-behavior-x:none}
+      .composer-appearance{grid-template-columns:minmax(0,1fr);max-width:100%;overflow:hidden}
+      .composer-star-preview{min-height:88px;grid-template-columns:auto minmax(0,1fr);padding:12px}
+      .composer-preview-title{max-width:none;text-align:left}
+      .composer-color-controls,.composer-color-line{min-width:0;max-width:100%}
+      .composer-swatches{flex-wrap:wrap;overflow-x:hidden}
       .memory-sort-row{grid-template-columns:1fr 1fr}
       .memory-sort-row #clearSearchBtn{grid-column:1/-1}
       body.mobile-sheet-memory #memoryPanel .search-box{padding-bottom:9px}
