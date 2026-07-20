@@ -1900,18 +1900,15 @@
       const breath = breathRaw * breathRaw * (3 - 2 * breathRaw);
       const relatedLift = focusedNodeId && isRelated ? .55 : 0;
       const r = base + (isSel ? 1.1 + breath * 1.15 : relatedLift) + base * .065 * hover;
-      const glowBase = (node.type === "tag" ? 63 : Math.max(22,base*5)) * trait.glow;
-      const glow = glowBase + (isSel ? (node.type === "tag" ? 9 + breath * 7 : 3.5 + breath * 1.5) : (focusedNodeId && isRelated ? (node.type === "tag" ? 4 : 2) : 0)) + (node.type === "tag" ? 6 : 2) * hover;
+      const glowBase = (node.type === "tag" ? 63 : 34) * trait.glow;
+      const glow = glowBase + (isSel ? 9 + breath * 7 : (focusedNodeId && isRelated ? 4 : 0)) + (node.type === "tag" ? 6 : 4) * hover;
       const nodeAlpha = isRelated ? 1 : .25;
       const light = 1 + twinkle + hover * .055 + (isSel ? .06 + breath * .08 : 0);
 
       const outer = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,glow);
-      const glowInner=node.type === "tag" ? (isSel ? .34 : (focusedNodeId && isRelated ? .23 : .13)) : (isSel ? .16 : (focusedNodeId && isRelated ? .11 : .075));
-      const glowMiddle=node.type === "tag" ? (isSel ? .15 : .060) : (isSel ? .075 : .038);
-      const glowOuter=node.type === "tag" ? .020 : .010;
-      outer.addColorStop(0, hexToRgba(starColor, Math.min(.46, glowInner * light)));
-      outer.addColorStop(.32, hexToRgba(starColor, Math.min(.20, glowMiddle * light)));
-      outer.addColorStop(.72, hexToRgba(starColor, Math.min(.055, glowOuter * light)));
+      outer.addColorStop(0, hexToRgba(starColor, Math.min(.46, (isSel ? .34 : (focusedNodeId && isRelated ? .23 : .13)) * light)));
+      outer.addColorStop(.32, hexToRgba(starColor, Math.min(.20, (isSel ? .15 : .060) * light)));
+      outer.addColorStop(.72, hexToRgba(starColor, Math.min(.055, .020 * light)));
       outer.addColorStop(1, hexToRgba(starColor,0));
       ctx.globalAlpha = nodeAlpha;
       ctx.fillStyle = outer; ctx.beginPath(); ctx.arc(p.x,p.y,glow,0,Math.PI*2); ctx.fill();
@@ -1944,7 +1941,14 @@
         ctx.beginPath(); ctx.arc(p.x,p.y,r*2.18,0,Math.PI*2); ctx.stroke();
         ctx.restore();
       }else{
-        drawLayeredFourPointStar(ctx,p.x,p.y,base*3.02,starColor,{selected:isSel,hover,light,core:trait.core,breath});
+        const inner = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*2.55);
+        inner.addColorStop(0, hexToRgba("#ffffff", Math.min(1, (.94 + hover*.04 + (isSel ? .04 : 0)) * trait.core)));
+        inner.addColorStop(.18, hexToRgba("#ffffff", Math.min(.68, (.48 + hover*.07 + breath*.08) * trait.core)));
+        inner.addColorStop(.44, hexToRgba(starColor, Math.min(.94, .80 * light)));
+        inner.addColorStop(1, hexToRgba(starColor,0));
+        ctx.fillStyle = inner; ctx.beginPath(); ctx.arc(p.x,p.y,r*2.55,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = hexToRgba(starColor, Math.min(.92, .78 * light)); ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = hexToRgba("#ffffff", Math.min(.82, (.52 + hover*.12 + breath*.10) * trait.core)); ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(1.05,r*.20),0,Math.PI*2); ctx.fill();
       }
       ctx.globalAlpha = 1;
       const noteFontSize = useReadableDesktopLabels ? Math.max(13,12.5/Math.max(view.scale,.01)) : 10;
@@ -2083,49 +2087,6 @@
       if(i===0) context.moveTo(px,py); else context.lineTo(px,py);
     }
     context.closePath();
-  }
-  function traceFourPointStar(context,x,y,verticalRadius,horizontalRadius,innerRadius){
-    context.beginPath();
-    context.moveTo(x,y-verticalRadius);
-    context.quadraticCurveTo(x+innerRadius,y-innerRadius,x+horizontalRadius,y);
-    context.quadraticCurveTo(x+innerRadius,y+innerRadius,x,y+verticalRadius);
-    context.quadraticCurveTo(x-innerRadius,y+innerRadius,x-horizontalRadius,y);
-    context.quadraticCurveTo(x-innerRadius,y-innerRadius,x,y-verticalRadius);
-    context.closePath();
-  }
-  function drawLayeredFourPointStar(context,x,y,size,color,options={}){
-    const selected=options.selected===true, hover=Number(options.hover)||0, light=Math.min(1.12,Math.max(.86,Number(options.light)||1));
-    const scale=(selected ? 1.065 : 1)*(1+Math.min(.012,hover*.012)), outerV=size*scale, outerH=outerV*.70;
-    const brightColor=blendColors(color,"#FFF6DF"), core=Math.min(1.08,Math.max(.78,Number(options.core)||1));
-    context.save();
-    context.lineJoin="round";
-    context.lineWidth=Math.max(.42,size*.035);
-    context.fillStyle=colorToRgba(color,Math.min(.82,(.67+(selected ? .055 : 0)+hover*.025)*light));
-    context.strokeStyle=colorToRgba(brightColor,Math.min(.70,(.48+(selected ? .07 : 0))*light));
-    context.shadowColor=colorToRgba(color,selected ? .24 : .13);
-    context.shadowBlur=Math.min(size*1.05,selected ? 5.5 : 3.5);
-    traceFourPointStar(context,x,y,outerV,outerH,outerV*.10);
-    context.fill();
-    context.stroke();
-
-    context.shadowBlur=0;
-    context.fillStyle="rgba(10,12,18,.78)";
-    traceFourPointStar(context,x,y,outerV*.58,outerH*.58,outerV*.065);
-    context.fill();
-
-    const innerV=outerV*.41, innerH=outerH*.41;
-    context.fillStyle=colorToRgba(brightColor,Math.min(.96,(.79+(selected ? .09 : 0)+(Number(options.breath)||0)*.025)*core));
-    context.strokeStyle=hexToRgba("#FFF8E8",Math.min(.58,(selected ? .44 : .30)*core));
-    context.lineWidth=Math.max(.35,size*.025);
-    traceFourPointStar(context,x,y,innerV,innerH,innerV*.115);
-    context.fill();
-    context.stroke();
-
-    context.fillStyle=hexToRgba("#FFF9EA",Math.min(.78,(selected ? .64 : .48)*core));
-    context.beginPath();
-    context.arc(x,y,Math.max(.75,size*.075),0,Math.PI*2);
-    context.fill();
-    context.restore();
   }
   function colorToRgba(color,alpha){
     const m=String(color||"").match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
