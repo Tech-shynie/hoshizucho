@@ -1938,7 +1938,7 @@
   }
   function pseudo(n){ const x=Math.sin(n)*10000; return x-Math.floor(x); }
   function rgbaFromArray(arr,a){ return `rgba(${arr[0]},${arr[1]},${arr[2]},${a})`; }
-  function hexToRgba(hex,alpha){ const v=String(hex||"#fff").replace("#",""); const f=v.length===3?v.split("").map(x=>x+x).join(""):v; const r=parseInt(f.slice(0,2),16)||255,g=parseInt(f.slice(2,4),16)||255,b=parseInt(f.slice(4,6),16)||255; return `rgba(${r},${g},${b},${alpha})`; }
+  function hexToRgba(hex,alpha){ const v=String(hex||"#fff").replace("#",""); const f=v.length===3?v.split("").map(x=>x+x).join(""):v; const channels=[f.slice(0,2),f.slice(2,4),f.slice(4,6)].map(part=>parseInt(part,16)); const [r,g,b]=channels.every(Number.isFinite)?channels:[255,255,255]; return `rgba(${r},${g},${b},${alpha})`; }
   function parseHex(hex){ const v=String(hex||"").replace("#",""); const f=v.length===3?v.split("").map(x=>x+x).join(""):v; if(f.length!==6) return null; return {r:parseInt(f.slice(0,2),16),g:parseInt(f.slice(2,4),16),b:parseInt(f.slice(4,6),16)}; }
   function colorLuminance(color){ const p=parseHex(color); if(!p) return 0; const channels=[p.r,p.g,p.b].map(v=>{ const s=v/255; return s<=.03928?s/12.92:Math.pow((s+.055)/1.055,2.4); }); return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722; }
   function contrastRatio(a,b){ const la=colorLuminance(a),lb=colorLuminance(b),bright=Math.max(la,lb),dark=Math.min(la,lb); return (bright+.05)/(dark+.05); }
@@ -2264,7 +2264,7 @@
   }
   function updateTagStyle(tag,field,value,silent=false){
     const key=graphKey(tag), safeField=field === "textColor" ? "textColor" : "starColor";
-    if(safeField==="textColor" && !hasReadableTextContrast(value)){ if(!silent) toast("文字色が背景に対して読みにくいため、変更しませんでした。"); return false; }
+    const lowContrast=safeField==="textColor" && !hasReadableTextContrast(value);
     const next={...tagStyles,[key]:{...(tagStyles[key]||{}),[safeField]:value}};
     if(!saveTagStyles(next)) return;
     const title=document.querySelector("[data-tag-title]");
@@ -2273,7 +2273,7 @@
     const custom=$(safeField === "starColor" ? "customTagStarColor" : "customTagTextColor");
     if(custom && String(custom.value).toLowerCase()!==String(value).toLowerCase()) custom.value=value;
     requestCanvasFrame();
-    if(!silent) toast(safeField === "starColor" ? "タグ星の色を変更しました。" : "タグ星の文字色を変更しました。");
+    if(!silent) toast(lowContrast ? "文字色を変更しました。背景によっては読みにくくなる場合があります。" : (safeField === "starColor" ? "タグ星の色を変更しました。" : "タグ星の文字色を変更しました。"));
   }
   function saveEditedTag(oldTag){
     const nextTag=cleanTag($("editTagNameInput").value).slice(0,32);
@@ -2355,7 +2355,7 @@
     const n=notes.find(x=>x.id===id); if(!n) return;
     const safeField = field === "textColor" ? "textColor" : "starColor";
     const color = value || (safeField === "starColor" ? typeInfo(n.type).color : COLOR.text);
-    if(safeField==="textColor" && !hasReadableTextContrast(color)){ if(!silent) toast("文字色が背景に対して読みにくいため、変更しませんでした。"); return false; }
+    const lowContrast=safeField==="textColor" && !hasReadableTextContrast(color);
     const updated = {...n,[safeField]:color,updatedAt:new Date().toISOString()};
     if(!saveNotes(notes.map(x=>x.id===id ? updated : x))) return;
 
@@ -2371,7 +2371,7 @@
     if(custom && String(custom.value).toLowerCase() !== String(color).toLowerCase()) custom.value = color;
 
     requestCanvasFrame();
-    if(!silent) toast(safeField === "starColor" ? "星の色を変更しました。" : "タイトルの文字色を変更しました。");
+    if(!silent) toast(lowContrast ? "タイトルの文字色を変更しました。背景によっては読みにくくなる場合があります。" : (safeField === "starColor" ? "星の色を変更しました。" : "タイトルの文字色を変更しました。"));
   }
   function addManualLink(sourceId,targetId){
     if(!targetId) return toast("つなげる星片を選んでください。");
