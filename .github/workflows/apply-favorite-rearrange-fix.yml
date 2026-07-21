@@ -6,6 +6,11 @@ on:
       - fix/favorite-and-zoom-rearrange
     paths:
       - .github/workflows/apply-favorite-rearrange-fix.yml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-favorite-rearrange-fix.yml
 
 permissions:
   contents: write
