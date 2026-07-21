@@ -1206,6 +1206,7 @@
   const TAG_STYLE_KEY = "hoshizucho-v1-tag-styles";
   const NODE_LAYOUT_KEY = "hoshizucho-v1-node-layouts";
   const LAYOUT_COORD_MIN = -1, LAYOUT_COORD_MAX = 2;
+  const ANCHOR_RADIUS_PX = 10, ANCHOR_SPRING = .018, ANCHOR_EDGE_SPRING = .085, ANCHOR_DAMPING = .82;
   const DRAFT_KEY = "hoshizucho-v1-draft";
   const LEGACY_KEYS = ["hoshizucho-notes-url-color-v2", "hoshizucho-notes-url-color-v1", "hoshizucho-notes-local-v1"];
   const COLOR = { bg:"#111218", panel:"#1B1D24", text:"#ECE8DE", sub:"#9A9DAA", gold:"#C9A24A", gold2:"#D8C48A", edge:"#444957", manual:"#8AB4FF", danger:"#C1666B" };
@@ -1451,9 +1452,13 @@
     p.x=clamp(p.x,Math.min(left.x,right.x),Math.max(left.x,right.x));
     p.y=clamp(p.y,Math.min(left.y,right.y),Math.max(left.y,right.y));
     const normalizedX=clamp(p.x/w,LAYOUT_COORD_MIN,LAYOUT_COORD_MAX), normalizedY=clamp(p.y/h,LAYOUT_COORD_MIN,LAYOUT_COORD_MAX);
-    p.x=normalizedX*w; p.y=normalizedY*h; p.vx=0; p.vy=0; p.pinned=true;
+    p.x=normalizedX*w; p.y=normalizedY*h; p.anchorX=p.x; p.anchorY=p.y; p.pinned=false;
+    const releaseLimit=.7/Math.max(view.scale,.01);
+    p.vx=clamp((Number.isFinite(p.vx)?p.vx:0)*.22,-releaseLimit,releaseLimit); p.vy=clamp((Number.isFinite(p.vy)?p.vy:0)*.22,-releaseLimit,releaseLimit);
     graphLabelLayout=new Map(); graphLabelLayoutAt=0;
-    return saveNodeLayouts({...nodeLayouts,[id]:{x:normalizedX,y:normalizedY}});
+    const saved=saveNodeLayouts({...nodeLayouts,[id]:{x:normalizedX,y:normalizedY}});
+    if(saved) wakePhysics();
+    return saved;
   }
   function removeNodeLayout(id, silent=true){
     if(!nodeLayouts[id]) return;
@@ -1796,14 +1801,14 @@
     const radius = Math.min(w,h) * (tags.length <= 1 ? 0 : 0.30);
     tags.forEach((node,index) => {
       const saved=nodeLayouts[node.id];
-      if(saved){ if(draggingId===node.id && physics[node.id]) return; physics[node.id]={x:saved.x*w,y:saved.y*h,vx:0,vy:0,pinned:true}; return; }
+      if(saved){ if(draggingId===node.id && physics[node.id]) return; const anchorX=saved.x*w, anchorY=saved.y*h; physics[node.id]={x:anchorX,y:anchorY,vx:0,vy:0,pinned:false,anchorX,anchorY}; return; }
       if(physics[node.id]) return;
       const angle = -Math.PI/2 + (Math.PI*2*index) / Math.max(tags.length,1);
       physics[node.id] = { x:w/2 + Math.cos(angle)*radius, y:h/2 + Math.sin(angle)*radius, vx:0, vy:0 };
     });
     notesNodes.forEach(node => {
       const saved=nodeLayouts[node.id];
-      if(saved){ if(draggingId===node.id && physics[node.id]) return; physics[node.id]={x:saved.x*w,y:saved.y*h,vx:0,vy:0,pinned:true}; return; }
+      if(saved){ if(draggingId===node.id && physics[node.id]) return; const anchorX=saved.x*w, anchorY=saved.y*h; physics[node.id]={x:anchorX,y:anchorY,vx:0,vy:0,pinned:false,anchorX,anchorY}; return; }
       if(physics[node.id]) return;
       const parentEdge = graph.edges.find(e => e.target === node.id && e.type === "tag");
       const parent = parentEdge && physics[parentEdge.source] ? physics[parentEdge.source] : { x:w/2, y:h/2 };
@@ -1863,8 +1868,8 @@
       let dx=b.x-a.x, dy=b.y-a.y, dist=Math.sqrt(dx*dx+dy*dy)||.1;
       const desired = e.type === "manual" ? 108 : 132;
       const force=(dist-desired)*(e.type === "manual" ? .018 : .022); dx/=dist; dy/=dist;
-      if(!a.pinned && draggingId!==e.source){ a.vx += dx*force; a.vy += dy*force; }
-      if(!b.pinned && draggingId!==e.target){ b.vx -= dx*force; b.vy -= dy*force; }
+      if(!a.pinned && !Number.isFinite(a.anchorX) && draggingId!==e.source){ a.vx += dx*force; a.vy += dy*force; }
+      if(!b.pinned && !Number.isFinite(b.anchorX) && draggingId!==e.target){ b.vx -= dx*force; b.vy -= dy*force; }
     }
     const tagNodes = graph.nodes.filter(n=>n.type === "tag");
     let maxSpeed=0, movable=0;
@@ -1872,8 +1877,13 @@
       const p=physics[id]; if(!p || draggingId === id) continue;
       if(p.pinned){ p.vx=0; p.vy=0; continue; }
       movable++;
-      const node = nodeById.get(id);
-      if(node?.type === "tag"){
+      const node = nodeById.get(id), anchored=Number.isFinite(p.anchorX) && Number.isFinite(p.anchorY);
+      if(anchored){
+        // 係留済みの星は衝突にだけ少し譲り、表示上約10pxの重力井戸へ静かに戻す。
+        const dx=p.anchorX-p.x, dy=p.anchorY-p.y, dist=Math.hypot(dx,dy), radius=ANCHOR_RADIUS_PX/visible.scale;
+        p.vx += dx*ANCHOR_SPRING; p.vy += dy*ANCHOR_SPRING;
+        if(dist>radius){ const excess=dist-radius; p.vx += dx/dist*excess*ANCHOR_EDGE_SPRING; p.vy += dy/dist*excess*ANCHOR_EDGE_SPRING; }
+      }else if(node?.type === "tag"){
         const index = tagNodes.findIndex(n=>n.id===id);
         const radius = Math.min(visible.width,visible.height) * (tagNodes.length <= 1 ? 0 : .30);
         const angle = -Math.PI/2 + (Math.PI*2*index)/Math.max(tagNodes.length,1);
@@ -1882,10 +1892,13 @@
       }else{
         p.vx += (visible.centerX - p.x) * .00025; p.vy += (visible.centerY - p.y) * .00025;
       }
-      p.vx *= .86; p.vy *= .86; p.x += p.vx; p.y += p.vy;
+      const damping=anchored?ANCHOR_DAMPING:.86;
+      p.vx *= damping; p.vy *= damping; p.x += p.vx; p.y += p.vy;
       maxSpeed=Math.max(maxSpeed,Math.abs(p.vx)+Math.abs(p.vy));
-      const marginX = (node?.type === "tag" ? 68 : 42) / visible.scale, marginY = 56 / visible.scale;
-      p.x = clamp(p.x, visible.left+marginX, visible.right-marginX); p.y = clamp(p.y, visible.top+marginY, visible.bottom-marginY);
+      if(!anchored){
+        const marginX = (node?.type === "tag" ? 68 : 42) / visible.scale, marginY = 56 / visible.scale;
+        p.x = clamp(p.x, visible.left+marginX, visible.right-marginX); p.y = clamp(p.y, visible.top+marginY, visible.bottom-marginY);
+      }
     }
     return {maxSpeed,movable};
   }
@@ -2170,7 +2183,9 @@
   function screenToWorld(pos){ return {x:(pos.x-view.x)/view.scale, y:(pos.y-view.y)/view.scale}; }
   function moveDraggedNode(screen){
     const p=draggingId ? physics[draggingId] : null; if(!p || !screen) return false;
-    const world=screenToWorld(screen); p.x=world.x; p.y=world.y; p.vx=0; p.vy=0;
+    const world=screenToWorld(screen), dx=world.x-p.x, dy=world.y-p.y;
+    if(Math.abs(dx)+Math.abs(dy)>.01){ p.vx=dx; p.vy=dy; }
+    p.x=world.x; p.y=world.y;
     return true;
   }
   function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
@@ -2729,7 +2744,7 @@
     const left=visible.left+marginX, right=visible.right-marginX, top=visible.top+marginY, bottom=visible.bottom-marginY;
     for(const id of Object.keys(physics)){
       physics[id].x=left+Math.random()*Math.max(0,right-left); physics[id].y=top+Math.random()*Math.max(0,bottom-top);
-      physics[id].vx=0; physics[id].vy=0; physics[id].pinned=false;
+      physics[id].vx=0; physics[id].vy=0; physics[id].pinned=false; delete physics[id].anchorX; delete physics[id].anchorY;
     }
     graphLabelLayout=new Map(); graphLabelLayoutAt=0; wakePhysics(); toast("固定位置を解除して再配置しました。");
   }
