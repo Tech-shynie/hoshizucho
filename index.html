@@ -1453,7 +1453,8 @@
     p.y=clamp(p.y,Math.min(left.y,right.y),Math.max(left.y,right.y));
     const normalizedX=clamp(p.x/w,LAYOUT_COORD_MIN,LAYOUT_COORD_MAX), normalizedY=clamp(p.y/h,LAYOUT_COORD_MIN,LAYOUT_COORD_MAX);
     p.x=normalizedX*w; p.y=normalizedY*h; p.anchorX=p.x; p.anchorY=p.y; p.pinned=false;
-    p.vx=clamp((Number.isFinite(p.vx)?p.vx:0)*.22,-.7,.7); p.vy=clamp((Number.isFinite(p.vy)?p.vy:0)*.22,-.7,.7);
+    const releaseLimit=.7/Math.max(view.scale,.01);
+    p.vx=clamp((Number.isFinite(p.vx)?p.vx:0)*.22,-releaseLimit,releaseLimit); p.vy=clamp((Number.isFinite(p.vy)?p.vy:0)*.22,-releaseLimit,releaseLimit);
     graphLabelLayout=new Map(); graphLabelLayoutAt=0;
     const saved=saveNodeLayouts({...nodeLayouts,[id]:{x:normalizedX,y:normalizedY}});
     if(saved) wakePhysics();
