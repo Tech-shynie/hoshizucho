@@ -1728,7 +1728,7 @@
     };
     for(const note of graphNotes){
       const t = typeInfo(note.type);
-      addNode({ id:note.id, type:"note", label:note.title, noteId:note.id, color:note.starColor || t.color, textColor:note.textColor || COLOR.text, kind:note.type });
+      addNode({ id:note.id, type:"note", label:note.title, noteId:note.id, color:note.starColor || t.color, textColor:note.textColor || COLOR.text, kind:note.type, favorite:!!note.favorite });
       const tags = (note.tags || []).filter(Boolean);
       const branches = activeGraphTag ? [activeGraphTag] : (tags.length ? tags : ["未分類"]);
       for(const tag of branches){
@@ -1759,8 +1759,9 @@
     for(const ch of String(value||"")){ hash^=ch.charCodeAt(0); hash=Math.imul(hash,16777619); }
     return (hash>>>0)/4294967295;
   }
-  function getNotePlacementTargets(graph,fallback={x:size.w/2,y:size.h/2}){
+  function getNotePlacementTargets(graph,fallback={x:size.w/2,y:size.h/2},visible=visibleWorldBounds()){
     const tagIdsByNote=new Map(), groups=new Map(), targets=new Map();
+    const mobile=size.w<=620, scale=Math.max(visible.scale,.01);
     for(const edge of graph.edges){
       if(edge.type!=="tag") continue;
       if(!tagIdsByNote.has(edge.target)) tagIdsByNote.set(edge.target,[]);
@@ -1772,6 +1773,14 @@
       if(!groups.has(key)) groups.set(key,{tagIds,notes:[]});
       groups.get(key).notes.push(node);
     }
+    const ringSlot=(index,count,baseRadius,step,ringGap)=>{
+      const ringCount=count<=5?1:(count<=10?2:3);
+      const itemsPerRing=Math.ceil(count/ringCount);
+      const ringIndex=Math.min(ringCount-1,Math.floor(index/itemsPerRing));
+      const ringStart=ringIndex*itemsPerRing;
+      const itemsInRing=Math.max(1,Math.min(itemsPerRing,count-ringStart));
+      return {ringIndex,angleIndex:index-ringStart,itemsInRing,radius:(baseRadius+Math.min(count,10)*step-(ringCount-1-ringIndex)*ringGap)/scale};
+    };
     for(const [key,group] of groups){
       const tagPositions=group.tagIds.map(id=>physics[id]).filter(Boolean);
       const center=tagPositions.length ? {
@@ -1779,15 +1788,31 @@
         y:tagPositions.reduce((sum,p)=>sum+p.y,0)/tagPositions.length
       } : fallback;
       const items=group.notes.sort((a,b)=>String(a.id).localeCompare(String(b.id)));
-      const radius=clamp(35+Math.sqrt(Math.max(0,items.length-1))*14,35,90);
       const baseAngle=stableUnit(key||"untagged")*Math.PI*2;
+      let targetCenter=center;
+      if(tagPositions.length>1){
+        let outwardX=center.x-visible.centerX, outwardY=center.y-visible.centerY;
+        let length=Math.hypot(outwardX,outwardY);
+        if(length<.001){const stableAngle=baseAngle+.7;outwardX=Math.cos(stableAngle);outwardY=Math.sin(stableAngle);length=1;}
+        const outwardDistance=clamp((mobile?58:44)+Math.min(items.length,8)*4,40,90)/scale;
+        targetCenter={x:center.x+outwardX/length*outwardDistance,y:center.y+outwardY/length*outwardDistance};
+      }
       items.forEach((node,index)=>{
-        const angle=baseAngle+Math.PI*2*index/Math.max(items.length,1);
-        const radial=radius+(stableUnit(node.id)-.5)*8;
-        targets.set(node.id,{x:center.x+Math.cos(angle)*radial,y:center.y+Math.sin(angle)*radial,tagCount:tagPositions.length});
+        const slot=tagPositions.length<=1
+          ? ringSlot(index,items.length,mobile?110:90,mobile?5:3,mobile?25:15)
+          : ringSlot(index,items.length,mobile?40:34,mobile?4:3,mobile?18:16);
+        const angle=baseAngle+slot.ringIndex*.35+Math.PI*2*slot.angleIndex/slot.itemsInRing;
+        const radial=tagPositions.length>1&&items.length===1?0:slot.radius+(stableUnit(node.id)-.5)*8/scale;
+        targets.set(node.id,{x:targetCenter.x+Math.cos(angle)*radial,y:targetCenter.y+Math.sin(angle)*radial,tagCount:tagPositions.length,ringIndex:slot.ringIndex});
       });
     }
     return targets;
+  }
+  function noteTitleLimit(scale,priority=false,selected=false){
+    let limit=scale>=1?12:(scale>=.75?10:(scale>=.5?8:5));
+    if(selected) limit=Math.max(limit,18);
+    else if(priority) limit=Math.max(limit,12);
+    return limit;
   }
   function tagMinimumDistance(visible){
     return Math.min(TAG_MIN_DISTANCE_PX/visible.scale,Math.min(visible.width,visible.height)*.42);
@@ -1912,6 +1937,7 @@
     canvas.width = Math.floor(size.w * dpr); canvas.height = Math.floor(size.h * dpr);
     canvas.style.width = size.w + "px"; canvas.style.height = size.h + "px";
     ctx.setTransform(dpr,0,0,dpr,0,0);
+    graphLabelLayout=new Map();graphLabelLayoutAt=0;
     initPhysics(false);
   }
   function tick(now = performance.now()){
@@ -1980,8 +2006,12 @@
       p.vx*=damping;p.vy*=damping;p.x+=p.vx;p.y+=p.vy;
       maxSpeed=Math.max(maxSpeed,Math.abs(p.vx)+Math.abs(p.vy));
       if(!anchored){
-        const marginX=(node?.type==="tag"?76:42)/visible.scale,marginY=(node?.type==="tag"?64:56)/visible.scale;
-        p.x=clamp(p.x,visible.left+marginX,visible.right-marginX);p.y=clamp(p.y,visible.top+marginY,visible.bottom-marginY);
+        const mobile=size.w<=620, isTag=node?.type==="tag";
+        const marginX=(isTag?76:(mobile?48:42))/visible.scale;
+        const topMargin=(isTag?64:(mobile?62:56))/visible.scale;
+        const bottomMargin=(isTag?64:(mobile?88:56))/visible.scale;
+        p.x=clamp(p.x,visible.left+marginX,visible.right-marginX);
+        p.y=clamp(p.y,visible.top+topMargin,visible.bottom-bottomMargin);
       }
     }
     return {maxSpeed,movable};
@@ -2006,12 +2036,12 @@
       const lineColor=e.type==="manual"?COLOR.manual:(isSel?blendColors(sourceColor,targetColor):COLOR.edge);
       const multiTagEdge=e.type==="tag"&&(tagConnectionCounts.get(e.target)||0)>1;
       const baseAlpha=e.type==="manual"?(isSel?.88:(hasFocus?.22:(useReadableDesktopGraph?.60:.54))):(isSel?.82:(hasFocus?.18:(useReadableDesktopGraph?.50:.44)));
-      const lineAlpha=baseAlpha*(multiTagEdge?(isSel||isHovered?.96:.78):1);
+      const lineAlpha=baseAlpha*(multiTagEdge?(isSel||isHovered?.96:.72):1);
       const grad=ctx.createLinearGradient(a.x,a.y,b.x,b.y);
       grad.addColorStop(0,colorToRgba(lineColor,lineAlpha*1.02));grad.addColorStop(.46,colorToRgba(lineColor,lineAlpha*(useReadableDesktopGraph?.72:.64)));grad.addColorStop(.54,colorToRgba(lineColor,lineAlpha*(useReadableDesktopGraph?.72:.64)));grad.addColorStop(1,colorToRgba(lineColor,lineAlpha*.98));
       ctx.save();ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.lineCap="round";ctx.lineJoin="round";ctx.strokeStyle=grad;
       const baseWidth=e.type==="manual"?(isSel?2.9:(useReadableDesktopGraph?1.8:1.65)):(isSel?2.55:(useReadableDesktopGraph?1.4:1.25));
-      ctx.lineWidth=baseWidth*(multiTagEdge?(isSel||isHovered?.94:.78):1);
+      ctx.lineWidth=baseWidth*(multiTagEdge?(isSel||isHovered?.94:.74):1);
       if(isSel||isHovered){ctx.shadowBlur=isSel?8:4;ctx.shadowColor=colorToRgba(lineColor,isSel?.42:.24);}
       if(e.type==="manual")ctx.setLineDash([5,5]);ctx.stroke();ctx.restore();
     }
@@ -2085,9 +2115,11 @@
       }
       ctx.globalAlpha = 1;
       const noteFontSize = useReadableDesktopLabels ? Math.max(13,12.5/Math.max(view.scale,.01)) : 10;
-      const label = node.type === "tag" ? `#${node.label}` : `${typeInfo(node.kind).icon} ${node.label}`;
-      const labelText = truncate(label, node.type === "tag" ? 13 : 12);
-      labelItems.push({node,p,r,textColor,labelText,noteFontSize,isRelated,isSel,hover,twinkle});
+      const priorityLabel=node.type==="note"&&(isSel||hover>.1||node.favorite||(focusedNodeId?.startsWith("tag:")&&isRelated));
+      const labelText=node.type==="tag"
+        ? truncate(`#${node.label}`,13)
+        : `${typeInfo(node.kind).icon} ${truncate(node.label,noteTitleLimit(view.scale,priorityLabel,isSel))}`;
+      labelItems.push({node,p,r,textColor,labelText,noteFontSize,isRelated,isSel,hover,twinkle,priorityLabel});
     }
     drawGraphLabels(labelItems,useReadableDesktopLabels);
     ctx.restore();
@@ -2095,13 +2127,13 @@
   function drawGraphLabels(items,useReadableDesktopLabels){
     const now=performance.now();
     const idsChanged=graphLabelLayout.size!==items.length || items.some(item=>!graphLabelLayout.has(item.node.id));
-    if(idsChanged || now-graphLabelLayoutAt>(draggingId ? 90 : 190)){
+    if(idsChanged || graphLabelLayoutAt===0 || (draggingId&&now-graphLabelLayoutAt>120)){
       graphLabelLayout=buildGraphLabelLayout(items,useReadableDesktopLabels);
       graphLabelLayoutAt=now;
     }
     const ordered=[...items].sort((a,b)=>(a.node.type==="tag"?0:1)-(b.node.type==="tag"?0:1));
     for(const item of ordered){
-      const placed=graphLabelLayout.get(item.node.id) || {dx:0,dy:item.r+17,fontSize:item.noteFontSize};
+      const placed=graphLabelLayout.get(item.node.id) || {dx:0,dy:item.r+(item.node.type==="tag"?24:23),fontSize:item.noteFontSize};
       const weight=item.node.type==="tag" ? "700" : (useReadableDesktopLabels ? "600" : "500");
       ctx.font=`${weight} ${placed.fontSize}px 'Zen Kaku Gothic New', system-ui, sans-serif`;
       ctx.fillStyle=item.textColor;
@@ -2122,7 +2154,8 @@
   }
   function buildGraphLabelLayout(items,useReadableDesktopLabels){
     const layout=new Map(), grid=new Map(), cell=72;
-    const ordered=[...items].sort((a,b)=>(a.node.type==="tag"?0:1)-(b.node.type==="tag"?0:1));
+    const labelPriority=item=>item.node.type==="tag"?3:(item.isSel?2:(item.priorityLabel?1:0));
+    const ordered=[...items].sort((a,b)=>labelPriority(b)-labelPriority(a)||String(a.node.id).localeCompare(String(b.node.id)));
     const cellsFor=box=>{
       const out=[];
       for(let gx=Math.floor(box.left/cell);gx<=Math.floor(box.right/cell);gx++) for(let gy=Math.floor(box.top/cell);gy<=Math.floor(box.bottom/cell);gy++) out.push(`${gx}:${gy}`);
@@ -2145,14 +2178,15 @@
         const weight=isTag?"700":(useReadableDesktopLabels?"600":"500");
         ctx.font=`${weight} ${fontSize}px 'Zen Kaku Gothic New', system-ui, sans-serif`;
         const width=Math.max(18,ctx.measureText(item.labelText).width), height=fontSize*1.24;
-        const below=item.r+(isTag?24:(useReadableDesktopLabels?19:17));
-        const side=item.r+9+width/2;
+        const below=item.r+(isTag?24:(useReadableDesktopLabels?25:23));
+        const above=-item.r-(isTag?10:16);
+        const side=item.r+(isTag?9:14)+width/2;
         const candidates=[
-          [0,below],[0,-item.r-10],[side,fontSize*.36],[-side,fontSize*.36],
-          [width*.34+item.r+7,below*.72],[-width*.34-item.r-7,below*.72],
-          [width*.34+item.r+7,-item.r-7],[-width*.34-item.r-7,-item.r-7],
-          [0,below+height*1.15],[0,-item.r-10-height*1.10],
-          [side+12,fontSize*.36],[-side-12,fontSize*.36]
+          [0,below],[0,above],[side,fontSize*.36],[-side,fontSize*.36],
+          [width*.34+item.r+11,below*.72],[-width*.34-item.r-11,below*.72],
+          [width*.34+item.r+11,above],[-width*.34-item.r-11,above],
+          [0,below+height*1.25],[0,above-height*1.18],
+          [side+14,fontSize*.36],[-side-14,fontSize*.36]
         ];
         for(const [dx,dy] of candidates){
           const x=item.p.x+dx, y=item.p.y+dy;
@@ -2165,7 +2199,7 @@
         }
         if(chosen) break;
       }
-      chosen=chosen||best||{dx:0,dy:item.r+17,fontSize:baseFont,box:{left:item.p.x-10,right:item.p.x+10,top:item.p.y,bottom:item.p.y+16}};
+      chosen=chosen||best||{dx:0,dy:item.r+(isTag?24:23),fontSize:baseFont,box:{left:item.p.x-10,right:item.p.x+10,top:item.p.y,bottom:item.p.y+18}};
       layout.set(item.node.id,{dx:chosen.dx,dy:chosen.dy,fontSize:chosen.fontSize});
       remember(chosen.box);
     }
@@ -2268,8 +2302,8 @@
   }
   function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
   function updateZoomLabel(){ $("zoomLevel").textContent = `${Math.round(view.scale*100)}%`; }
-  function setZoom(next, center={x:size.w/2,y:size.h/2}){ const scale=clamp(next,VIEW_MIN,VIEW_MAX); const world=screenToWorld(center); view.scale=scale; view.x=center.x-world.x*scale; view.y=center.y-world.y*scale; updateZoomLabel(); lastFrameTime=0; requestCanvasFrame(); }
-  function resetView(){ view={scale:1,x:0,y:0}; updateZoomLabel(); lastFrameTime=0; requestCanvasFrame(); toast("表示をリセットしました。"); }
+  function setZoom(next, center={x:size.w/2,y:size.h/2}){ const scale=clamp(next,VIEW_MIN,VIEW_MAX); const world=screenToWorld(center); view.scale=scale; view.x=center.x-world.x*scale; view.y=center.y-world.y*scale; graphLabelLayout=new Map();graphLabelLayoutAt=0;updateZoomLabel(); lastFrameTime=0; requestCanvasFrame(); }
+  function resetView(){ view={scale:1,x:0,y:0}; graphLabelLayout=new Map();graphLabelLayoutAt=0;updateZoomLabel(); lastFrameTime=0; requestCanvasFrame(); toast("表示をリセットしました。"); }
   function fitViewToSavedLayouts(){
     const liveIds=new Set(buildGraph().nodes.map(node=>node.id));
     const saved=Object.entries(nodeLayouts).filter(([id,p])=>liveIds.has(id) && p && Number.isFinite(p.x) && Number.isFinite(p.y));
@@ -2295,7 +2329,7 @@
     e.preventDefault();
   }
   function onMove(e){
-    if(e.touches?.length===2 && pinchStart){ const g=touchMidpointAndDistance(e.touches), scale=clamp(pinchStart.scale*g.distance/Math.max(pinchStart.distance,1),VIEW_MIN,VIEW_MAX); view.scale=scale; view.x=g.midpoint.x-pinchStart.world.x*scale; view.y=g.midpoint.y-pinchStart.world.y*scale; updateZoomLabel(); requestCanvasFrame(); e.preventDefault(); return; }
+    if(e.touches?.length===2 && pinchStart){ const g=touchMidpointAndDistance(e.touches), scale=clamp(pinchStart.scale*g.distance/Math.max(pinchStart.distance,1),VIEW_MIN,VIEW_MAX); view.scale=scale; view.x=g.midpoint.x-pinchStart.world.x*scale; view.y=g.midpoint.y-pinchStart.world.y*scale; graphLabelLayout=new Map();graphLabelLayoutAt=0;updateZoomLabel(); requestCanvasFrame(); e.preventDefault(); return; }
     const screen=getPointerPos(e);
     if(!e.touches && !draggingId && !panning){
       const world=screenToWorld(screen), id=findNode(world.x,world.y);
@@ -2822,7 +2856,7 @@
     for(const p of Object.values(physics)){p.vx=0;p.vy=0;p.pinned=false;delete p.anchorX;delete p.anchorY;delete p.homeX;delete p.homeY;}
     placeTagsAcrossVisible(graph,visible);
     relaxTagPositions(graph,visible,12);
-    const targets=getNotePlacementTargets(graph,{x:visible.centerX,y:visible.centerY});
+    const targets=getNotePlacementTargets(graph,{x:visible.centerX,y:visible.centerY},visible);
     for(const node of graph.nodes){
       if(node.type!=="note") continue;
       const p=physics[node.id],target=targets.get(node.id)||{x:visible.centerX,y:visible.centerY};
